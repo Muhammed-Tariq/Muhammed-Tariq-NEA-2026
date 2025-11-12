@@ -64,6 +64,10 @@ def mainMenu():
                     analyseGame()
                     playing = False
                     py.display.init()
+                if optionsButton.hover(py.mouse.get_pos()):
+                    options()
+                    playing = False
+                    py.display.init()
                 if quitButton.hover(py.mouse.get_pos()):
                     playing = False
                 
@@ -78,13 +82,22 @@ def initialiseGame():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
+    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+
     playing = True
     while playing:
+        backButton.hover(py.mouse.get_pos())
+        backButton.draw(screen)
         py.display.flip()
         for event in py.event.get():
             if event.type == py.QUIT:
                 playing = False
                 py.quit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if backButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
 
 def analyseGame():
     # The game analysis game loop, which runs when analysisButton / "Analysis" is clicked
@@ -96,13 +109,22 @@ def analyseGame():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
+    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+
     playing = True
     while playing:
+        backButton.hover(py.mouse.get_pos())
+        backButton.draw(screen)
         py.display.flip()
         for event in py.event.get():
             if event.type == py.QUIT:
                 playing = False
                 py.quit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if backButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
 
 def options():
     # The options game loop, which runs when optionsButton / "Options" is clicked
@@ -114,13 +136,22 @@ def options():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
+    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+
     playing = True
     while playing:
+        backButton.hover(py.mouse.get_pos())
+        backButton.draw(screen)
         py.display.flip()
         for event in py.event.get():
             if event.type == py.QUIT:
                 playing = False
                 py.quit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if backButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
 
 mainMenu()
 py.quit()
