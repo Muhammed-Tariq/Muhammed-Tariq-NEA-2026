@@ -1,4 +1,6 @@
 import pygame as py
+import tkinter as tk
+from tkinter import ttk
 from classes import Button
 
 # Constants
@@ -138,13 +140,19 @@ def analyseGame():
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
-    titleText = HEADER.render("Analyse Game", True, "#FFFFFF") 
-    titleRect = titleText.get_rect(center = (960, 160))
+    boardTemp = py.image.load("assets/placeholders/analysisplaceholder.png")
+    boardRect = boardTemp.get_rect(center = (960, 500))
+    screen.blit(boardTemp, boardRect)
+
+    titleText = BUTTON_TEXT.render("Analysis", True, "#FFFFFF") 
+    titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
     backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    analysisButton = Button((650, 850), "assets/buttons/optionsButton.png", "Upload", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [backButton]
+
+    allButtons = [backButton, analysisButton]
 
     playing = True
     while playing:
@@ -157,6 +165,8 @@ def analyseGame():
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
+                if analysisButton.hover(py.mouse.get_pos()):
+                    pass
                 if backButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
@@ -198,13 +208,18 @@ def singleplayer(timeSetting, playerSetting):
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
+    boardTemp = py.image.load("assets/placeholders/gameplaceholder.png")
+    boardRect = boardTemp.get_rect(center = (960, 500))
+    screen.blit(boardTemp, boardRect)
+
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
-    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    resignButton = Button((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    drawButton = Button((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [backButton]
+    allButtons = [resignButton, drawButton]
 
     playing = True
     while playing:
@@ -217,7 +232,11 @@ def singleplayer(timeSetting, playerSetting):
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
-                if backButton.hover(py.mouse.get_pos()):
+                if resignButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
+                if drawButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
                     py.display.init()
@@ -228,13 +247,18 @@ def multiplayer(timeSetting, playerSetting):
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
+    boardTemp = py.image.load("assets/placeholders/gameplaceholder.png")
+    boardRect = boardTemp.get_rect(center = (960, 500))
+    screen.blit(boardTemp, boardRect)
+
     titleText = BUTTON_TEXT.render("Multiplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
-    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    resignButton = Button((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    drawButton = Button((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [backButton]
+    allButtons = [resignButton, drawButton]
 
     playing = True
     while playing:
@@ -247,10 +271,13 @@ def multiplayer(timeSetting, playerSetting):
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
-                if backButton.hover(py.mouse.get_pos()):
+                if resignButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
                     py.display.init()
-
+                if drawButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
 mainMenu()
 py.quit()
