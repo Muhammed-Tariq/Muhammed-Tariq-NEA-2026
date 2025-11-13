@@ -19,6 +19,12 @@ class Button():
         screen.blit(self.image, self.rect)
         screen.blit(titleText, titleRect)
 
+    def refresh(self, screen, text):
+        titleText = self.font.render(text, True, self.colour) 
+        titleRect = titleText.get_rect(center = self.position)
+        screen.blit(self.image, self.rect)
+        screen.blit(titleText, titleRect)
+
     def hover(self, position):
         if self.rect.collidepoint(position):
             self.colour = self.hoverColour
