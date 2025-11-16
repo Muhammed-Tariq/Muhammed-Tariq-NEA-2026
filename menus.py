@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import simpledialog
 from classes import Buttons
 
-
 # Constants
 
 SCREEN_WIDTH = 1920
@@ -21,7 +20,7 @@ py.display.set_caption("Mockfish")
 
 TITLE = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 150)
 HEADER = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 100)
-BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 55)
+BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 52)
 SMALL_BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 35)
 BUTTON_IMAGE = py.image.load("assets/buttons/button.png")
 OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
@@ -29,7 +28,7 @@ OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 # Validation
 
 def pgnValidation(data):
-    if data == None or "":
+    if data == None or data == "":
         return None
     try:
         move = list(map(str, data.split("\n")))
@@ -67,6 +66,19 @@ def pgnValidation(data):
         return moves2D, whiteName, blackName
     except:
         return False
+
+def hexValidation(data):
+    if data == None or data == "":
+        return None
+    if data[0] != "#":
+        return False
+    if len(data) != 4 and len(data) != 7:
+        return False
+    for i in range(1, len(data)):
+        character = data[i]
+        if not (character.isdigit() or character in ["A", "B", "C", "D", "E", "F"]):
+            return False
+    return True
 
 # Game loops
 
@@ -200,7 +212,6 @@ def analyseGame():
     backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     analysisButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Upload", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-
     allButtons = [backButton, analysisButton]
 
     playing = True
@@ -238,9 +249,16 @@ def options():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
+    errorText = BUTTON_TEXT.render("Error", True, "#FFFFFF") 
+    errorRect = errorText.get_rect(center = (960, 1000))
+
+    successText = BUTTON_TEXT.render("Success", True, "#FFFFFF") 
+    successRect = successText.get_rect(center = (960, 1000))
+
+    colourButton = Buttons((960, 400), "assets/buttons/button.png", "Colours", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [backButton]
+    allButtons = [backButton, colourButton]
 
     playing = True
     while playing:
@@ -253,6 +271,15 @@ def options():
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
+                if colourButton.hover(py.mouse.get_pos()):
+                    colour1 = tk.simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper()
+                    colour2 = tk.simpledialog.askstring("Entry Window", "Enter dark-square hex code").strip().upper()
+                    result1 = hexValidation(colour1)
+                    result2 = hexValidation(colour2)
+                    if not result1 or not result2:
+                        screen.blit(errorText, errorRect)
+                    else:
+                        screen.blit(successText, successRect)
                 if backButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
