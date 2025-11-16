@@ -1,7 +1,8 @@
 import pygame as py
 import tkinter as tk
-from tkinter import ttk
-from classes import Button
+from tkinter import simpledialog
+from classes import Buttons
+
 
 # Constants
 
@@ -25,6 +26,48 @@ SMALL_BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 35)
 BUTTON_IMAGE = py.image.load("assets/buttons/button.png")
 OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 
+# Validation
+
+def pgnValidation(data):
+    if data == None or "":
+        return None
+    try:
+        move = list(map(str, data.split("\n")))
+        for i in move:
+            if i[0:6] == "[White":
+                whiteName = i[7:len(i) - 1]
+            elif i[0:6] == "[Black":
+                blackName = i[7:len(i) - 1]
+
+        allMoves = list(map(str, move[len(move) - 1].split(".")))
+        allMoves.remove(allMoves[0])
+
+        for i in range(len(allMoves) - 1):
+            beginningTrim = allMoves[i][1:]
+            currentMove = allMoves[i]
+            if i < 8:
+                endTrim = beginningTrim[:-2]
+                allMoves[i] = endTrim
+            if i >= 8:
+                endTrim = beginningTrim[:-3]
+                allMoves[i] = endTrim
+
+        flatMoves = []
+        for move in allMoves:
+            if "{" in move:
+                move = move[:move.index("{")]
+            move = move.strip()
+            if not move:
+                continue
+            flatMoves.extend(move.split())
+
+        moves2D = []
+        for i in range(0, len(flatMoves) - 1, 2):
+            moves2D.append([flatMoves[i], flatMoves[i + 1]])
+        return moves2D, whiteName, blackName
+    except:
+        return False
+
 # Game loops
 
 def mainMenu():
@@ -37,10 +80,10 @@ def mainMenu():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
-    playButton = Button((960, 400), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    analysisButton = Button((960, 600), "assets/buttons/button.png", "Analysis", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    quitButton = Button((960, 800), "assets/buttons/button.png", "Quit", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    optionsButton = Button((1820, 50), "assets/buttons/optionsButton.png", "Options", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    playButton = Buttons((960, 400), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    analysisButton = Buttons((960, 600), "assets/buttons/button.png", "Analysis", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    quitButton = Buttons((960, 800), "assets/buttons/button.png", "Quit", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    optionsButton = Buttons((1820, 50), "assets/buttons/optionsButton.png", "Options", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [playButton, analysisButton, quitButton, optionsButton]
 
@@ -92,11 +135,11 @@ def initialiseGame():
     playerSelectRect = playerSelectText.get_rect(center = (1280, 575))
     screen.blit(playerSelectText, playerSelectRect)
 
-    singleplayerButton = Button((640, 400), "assets/buttons/button.png", "Singleplayer", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    multiplayerButton = Button((1280, 400), "assets/buttons/button.png", "Multiplayer", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    timeSelectButton = Button((640, 700), "assets/buttons/button.png", "1 min", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    playerSelectButton = Button((1280, 700), "assets/buttons/button.png", "White", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    singleplayerButton = Buttons((640, 400), "assets/buttons/button.png", "Singleplayer", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    multiplayerButton = Buttons((1280, 400), "assets/buttons/button.png", "Multiplayer", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    timeSelectButton = Buttons((640, 700), "assets/buttons/button.png", "1 min", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    playerSelectButton = Buttons((1280, 700), "assets/buttons/button.png", "White", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [singleplayerButton, multiplayerButton, timeSelectButton, playerSelectButton, backButton]
 
@@ -148,8 +191,14 @@ def analyseGame():
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
-    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    analysisButton = Button((650, 850), "assets/buttons/optionsButton.png", "Upload", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    errorText = BUTTON_TEXT.render("Error", True, "#FFFFFF") 
+    errorRect = errorText.get_rect(center = (960, 1000))
+
+    successText = BUTTON_TEXT.render("Success", True, "#FFFFFF") 
+    successRect = successText.get_rect(center = (960, 1000))
+
+    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    analysisButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Upload", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
 
     allButtons = [backButton, analysisButton]
@@ -166,7 +215,14 @@ def analyseGame():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if analysisButton.hover(py.mouse.get_pos()):
-                    pass
+                    data = tk.simpledialog.askstring("Entry Window", "Enter PGN/FEN data")
+                    result = pgnValidation(data)
+                    if result == None:
+                        pass
+                    elif result != False:
+                        screen.blit(successText, successRect)
+                    else:
+                        screen.blit(errorText, errorRect)
                 if backButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
@@ -182,7 +238,7 @@ def options():
     titleRect = titleText.get_rect(center = (960, 160))
     screen.blit(titleText, titleRect)
 
-    backButton = Button((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [backButton]
 
@@ -216,8 +272,8 @@ def singleplayer(timeSetting, playerSetting):
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
-    resignButton = Button((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    drawButton = Button((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [resignButton, drawButton]
 
@@ -255,8 +311,8 @@ def multiplayer(timeSetting, playerSetting):
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
-    resignButton = Button((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    drawButton = Button((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [resignButton, drawButton]
 
