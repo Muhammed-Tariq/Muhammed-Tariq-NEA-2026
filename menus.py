@@ -28,23 +28,23 @@ OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 # Validation
 
 def pgnValidation(data):
-    if data == None or data == "":
+    if data == None or data == "": # If no data is entered, return "None" so nothing appears
         return None
     try:
-        move = list(map(str, data.split("\n")))
+        move = list(map(str, data.split("\n"))) # Splits the data up by line breaks
         for i in move:
             if i[0:6] == "[White":
-                whiteName = i[7:len(i) - 1]
+                whiteName = i[7:len(i) - 1] # Uses string slicing to obtain the names of each team
             elif i[0:6] == "[Black":
                 blackName = i[7:len(i) - 1]
 
-        allMoves = list(map(str, move[len(move) - 1].split(".")))
-        allMoves.remove(allMoves[0])
+        allMoves = list(map(str, move[len(move) - 1].split("."))) # Splits up by period "." to get each move sequence
+        allMoves.remove(allMoves[0]) # First element is always "1"
 
-        for i in range(len(allMoves) - 1):
-            beginningTrim = allMoves[i][1:]
+        for i in range(len(allMoves) - 1): 
+            beginningTrim = allMoves[i][1:] # Removes the first character (whitespace) of a string
             currentMove = allMoves[i]
-            if i < 8:
+            if i < 8: # Removes 2 or 3 characters from the end depending on what the move is
                 endTrim = beginningTrim[:-2]
                 allMoves[i] = endTrim
             if i >= 8:
@@ -53,30 +53,30 @@ def pgnValidation(data):
 
         flatMoves = []
         for move in allMoves:
-            if "{" in move:
-                move = move[:move.index("{")]
-            move = move.strip()
+            if "{" in move: 
+                move = move[:move.index("{")] # Removes comments
+            move = move.strip() # Removes whitespace
             if not move:
                 continue
             flatMoves.extend(move.split())
 
         moves2D = []
         for i in range(0, len(flatMoves) - 1, 2):
-            moves2D.append([flatMoves[i], flatMoves[i + 1]])
+            moves2D.append([flatMoves[i], flatMoves[i + 1]]) # Adds properly formatted moves
         return moves2D, whiteName, blackName
     except:
         return False
 
 def hexValidation(data):
-    if data == None or data == "":
+    if data == None or data == "": # If no data is entered, return "None" so nothing appears
         return None
-    if data[0] != "#":
+    if data[0] != "#": # Every hex code must include a hashtag
         return False
-    if len(data) != 4 and len(data) != 7:
+    if len(data) != 4 and len(data) != 7: # Every hex code (including the hashtag) is either 4 or 7 characters long
         return False
     for i in range(1, len(data)):
         character = data[i]
-        if not (character.isdigit() or character in ["A", "B", "C", "D", "E", "F"]):
+        if not (character.isdigit() or character in ["A", "B", "C", "D", "E", "F"]): # All hex codes are either digits or letters A-F
             return False
     return True
 
@@ -85,33 +85,33 @@ def hexValidation(data):
 def mainMenu():
     # The main menu's game loop, which always runs when this program is executed
 
-    bg = py.image.load("assets/bg.png")
-    screen.blit(bg, (0, 0))
+    bg = py.image.load("assets/bg.png") # Loads the background
+    screen.blit(bg, (0, 0)) # Places the background onto the screen
 
-    titleText = TITLE.render("Mockfish", True, "#FFFFFF") 
-    titleRect = titleText.get_rect(center = (960, 160))
+    titleText = TITLE.render("Mockfish", True, "#FFFFFF") # Renders the text
+    titleRect = titleText.get_rect(center = (960, 160)) # Rectangle for alignment
     screen.blit(titleText, titleRect)
 
-    playButton = Buttons((960, 400), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    playButton = Buttons((960, 400), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C") # Initialises buttons with the Buttons class
     analysisButton = Buttons((960, 600), "assets/buttons/button.png", "Analysis", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     quitButton = Buttons((960, 800), "assets/buttons/button.png", "Quit", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     optionsButton = Buttons((1820, 50), "assets/buttons/optionsButton.png", "Options", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [playButton, analysisButton, quitButton, optionsButton]
+    allButtons = [playButton, analysisButton, quitButton, optionsButton] # Iterated through to shorten code
 
-    playing = True
+    playing = True # Game loop; true by default when a menu is opened
     while playing:
-        py.display.flip()
+        py.display.flip() # Update screen
         for button in allButtons:
             button.hover(py.mouse.get_pos())
             button.draw(screen)
         for event in py.event.get():
-            if event.type == py.QUIT:
+            if event.type == py.QUIT: # If the X button is clicked, close the game
                 playing = False
                 py.quit()
-            if event.type == py.MOUSEBUTTONDOWN: 
-                if playButton.hover(py.mouse.get_pos()):
-                    initialiseGame()
+            if event.type == py.MOUSEBUTTONDOWN: # If the mouse button is clicked...
+                if playButton.hover(py.mouse.get_pos()): # ...and the mouse is hovering over one of the buttons...
+                    initialiseGame() # ...an action occurs
                     playing = False
                     py.display.init()
                 if analysisButton.hover(py.mouse.get_pos()):
@@ -129,8 +129,8 @@ def mainMenu():
 def initialiseGame():
     # The game initialisation's game loop, which runs when playButton / "Start Game" is clicked
 
-    timeSelectList = ["1 min", "2 mins", "5 mins", "10 mins", "15 mins", "20 mins", "30 mins", "60 mins", "90 mins"]
-    timeCounter = 0
+    timeSelectList = ["1 min", "2 mins", "5 mins", "10 mins", "15 mins", "20 mins", "30 mins", "60 mins", "90 mins"] # List to select options
+    timeCounter = 0 # Iterates list through
     playerSelectList = ["White", "Black", "Random"]
     playerCounter = 0
     
@@ -161,7 +161,7 @@ def initialiseGame():
         for button in allButtons:
             button.hover(py.mouse.get_pos())
             button.draw(screen)
-            timeSelectButton.refresh(screen, timeSelectList[timeCounter])
+            timeSelectButton.refresh(screen, timeSelectList[timeCounter]) # Refresh to change text
             playerSelectButton.refresh(screen, playerSelectList[playerCounter])
         for event in py.event.get():
             if event.type == py.QUIT:
@@ -177,8 +177,8 @@ def initialiseGame():
                     playing = False
                     py.display.init()
                 if timeSelectButton.hover(py.mouse.get_pos()):
-                    timeCounter += 1
-                    timeCounter = timeCounter % len(timeSelectList)
+                    timeCounter += 1 # Increments counter to get to another option
+                    timeCounter = timeCounter % len(timeSelectList) # Modulus to cycle between options
                     timeSelectButton.draw(screen)
                 if playerSelectButton.hover(py.mouse.get_pos()):
                     playerCounter += 1
@@ -226,8 +226,8 @@ def analyseGame():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if analysisButton.hover(py.mouse.get_pos()):
-                    data = tk.simpledialog.askstring("Entry Window", "Enter PGN/FEN data")
-                    result = pgnValidation(data)
+                    data = tk.simpledialog.askstring("Entry Window", "Enter PGN/FEN data") # Simpledialog to input data
+                    result = pgnValidation(data) # Validates data
                     if result == None:
                         pass
                     elif result != False:
@@ -272,7 +272,7 @@ def options():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if colourButton.hover(py.mouse.get_pos()):
-                    colour1 = tk.simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper()
+                    colour1 = tk.simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper() # Entry window for hex codes, whitespace removed and capitalised
                     colour2 = tk.simpledialog.askstring("Entry Window", "Enter dark-square hex code").strip().upper()
                     result1 = hexValidation(colour1)
                     result2 = hexValidation(colour2)
