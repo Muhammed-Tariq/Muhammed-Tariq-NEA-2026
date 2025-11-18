@@ -318,6 +318,7 @@ def singleplayer(timeSetting, playerSetting):
     playing = True
     while playing:
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
+        gl.Board.hoverSquare(game, py.mouse.get_pos())
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())

@@ -38,3 +38,13 @@ class Board():
                 x += self.squareSize
             x = 0 + self.position[0]
             y += self.squareSize
+
+    def hoverSquare(self, mousePos):
+        x = mousePos[0]
+        y = mousePos[1]
+        col = (x - self.position[0]) // self.squareSize
+        row = (y - self.position[1]) // self.squareSize
+        if 0 <= col < 8 and 0 <= row < 8:
+            return int(row), int(col)
+        return None
+                
