@@ -1,0 +1,34 @@
+import pygame as py
+
+class Board():
+    def __init__(self, position, length, height, darkCol, lightCol):
+        self.board = [["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"], 
+                      ["bP"] * 8,
+                      [""] * 8,
+                      [""] * 8,
+                      [""] * 8,
+                      [""] * 8,
+                      ["wP"] * 8,
+                      ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+        self.moveHistory = []
+        self.whiteToMove = True # True if White is to move, False if Black is to move
+        self.position = position
+        self.length = length
+        self.height = height
+        self.squareSize = length / 8
+        self.darkCol = darkCol
+        self.lightCol = lightCol
+
+    def drawBoard(self, screen):
+        x = 0 + self.position[0]
+        y = 0 + self.position[1]
+        for r in range(8):
+            for c in range(8):
+                square = py.Rect(x, y, self.squareSize, self.squareSize)
+                if (r + c) % 2 == 0:
+                    py.draw.rect(screen, self.lightCol, square)
+                else:
+                    py.draw.rect(screen, self.darkCol, square)
+                x += self.squareSize
+            x = 0 + self.position[0]
+            y += self.squareSize

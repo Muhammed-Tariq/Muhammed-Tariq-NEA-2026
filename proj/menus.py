@@ -1,12 +1,16 @@
 import pygame as py
 import tkinter as tk
+import gameLogic as gl
 from tkinter import simpledialog
 from button import Buttons
+
 
 # Constants
 
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
+BOARD_WIDTH = 600
+BOARD_HEIGHT = 600
 
 # Pygame display initialisation
 
@@ -295,6 +299,8 @@ def singleplayer(timeSetting, playerSetting):
     boardRect = boardTemp.get_rect(center = (960, 500))
     screen.blit(boardTemp, boardRect)
 
+    game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#00235c"), py.Color("#619dff"))
+
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
@@ -306,6 +312,7 @@ def singleplayer(timeSetting, playerSetting):
 
     playing = True
     while playing:
+        gl.Board.drawBoard(game, screen)
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())
