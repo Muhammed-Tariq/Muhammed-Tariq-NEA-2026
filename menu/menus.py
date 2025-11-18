@@ -1,7 +1,7 @@
 import pygame as py
 import tkinter as tk
 from tkinter import simpledialog
-from classes import Buttons
+from button import Buttons
 
 # Constants
 
@@ -362,5 +362,6 @@ def multiplayer(timeSetting, playerSetting):
                     mainMenu()
                     playing = False
                     py.display.init()
+
 mainMenu()
 py.quit()
