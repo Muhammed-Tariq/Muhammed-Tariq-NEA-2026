@@ -26,9 +26,9 @@ class Buttons():
         screen.blit(titleText, titleRect)
 
     def hover(self, position):
-        if self.rect.collidepoint(position):
-            self.colour = self.hoverColour
+        if self.rect.collidepoint(position): # Checks whether the cursor is over the rectangle
+            self.colour = self.hoverColour # Changes the colour
             return True
         else:
-            self.colour = self.tempColour
+            self.colour = self.tempColour # Sets the main colour to a temporary one (to not get lost)
             return False

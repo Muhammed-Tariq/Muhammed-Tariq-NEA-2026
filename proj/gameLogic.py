@@ -9,44 +9,44 @@ class Board():
                       [""] * 8,
                       [""] * 8,
                       ["wP"] * 8,
-                      ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
-        self.moveHistory = []
-        self.legalMoves = []
+                      ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]] # Board as a 2D array
+        self.moveHistory = [] # Tracks the progress of the game through its historical moves
+        self.legalMoves = [] # Stores all legal moves
         self.whiteToMove = True # True if White is to move, False if Black is to move
-        self.position = position
-        self.length = length
+        self.position = position # User-selected position relative to screen
+        self.length = length # Dimensions of board
         self.height = height
-        self.squareSize = length / 8
-        self.darkCol = darkCol
+        self.squareSize = length / 8 # Board is 8x8
+        self.darkCol = darkCol # Dark and light-coloured squares
         self.lightCol = lightCol
 
     def drawBoard(self, screen, codes, images):
-        x = 0 + self.position[0]
+        x = 0 + self.position[0] # Offset by the position set by the user
         y = 0 + self.position[1]
         for r in range(8):
             for c in range(8):
                 square = py.Rect(x, y, self.squareSize, self.squareSize)
-                if (r + c) % 2 == 0:
+                if (r + c) % 2 == 0: # Modulus to alternate between light and dark squares
                     py.draw.rect(screen, self.lightCol, square)
                 else:
                     py.draw.rect(screen, self.darkCol, square)
                 piece = self.board[r][c]
                 try:
                     pieceImage = images[codes.index(piece)]
-                    screen.blit(pieceImage, (x, y))
+                    screen.blit(pieceImage, (x, y)) # Draqws piece images
                 except:
                     pass
-                x += self.squareSize
+                x += self.squareSize # Increments x to move to the next square
             x = 0 + self.position[0]
-            y += self.squareSize
+            y += self.squareSize # Increments y to move to the next row
 
     def generateLegalMoves(self):
         self.legalMoves = []
         for r in range(8):
             for c in range(8):
-                if self.board[r][c] == "":
+                if self.board[r][c] == "": # Prevents indexing a blank string
                     continue
-                if (self.whiteToMove and self.board[r][c][0] == "w") or (not self.whiteToMove and self.board[r][c][0] == "b"):
+                if (self.whiteToMove and self.board[r][c][0] == "w") or (not self.whiteToMove and self.board[r][c][0] == "b"): # If White and the piece is white, or if Black and the piece is black...
                     if self.board[r][c][1] == "P":
                         self.legalMoves.extend(self.pawnMoves(r, c))
                     elif self.board[r][c][1] == "R":
@@ -63,32 +63,32 @@ class Board():
     def hoverSquare(self, mousePos):
         x = mousePos[0]
         y = mousePos[1]
-        col = (x - self.position[0]) // self.squareSize
+        col = (x - self.position[0]) // self.squareSize # Integer division to figure out the square the cursor is in
         row = (y - self.position[1]) // self.squareSize
         if 0 <= col < 8 and 0 <= row < 8:
             return int(row), int(col)
         return None
                 
     def move(self, pos1, pos2):
-        if pos1 != None and pos2 != None:
+        if pos1 != None and pos2 != None: # Prevents None from being unpacked
             r1, c1 = pos1
             r2, c2 = pos2
             piece1 = self.board[r1][c1]
-            if piece1 != "":
-                if (piece1[0] == "b" and self.whiteToMove == False) or (piece1[0] == "w" and self.whiteToMove == True):
-                    if (pos1, pos2) in self.legalMoves:
+            if piece1 != "": # Prevents an empty string from being indexed
+                if (piece1[0] == "b" and self.whiteToMove == False) or (piece1[0] == "w" and self.whiteToMove == True): # If the piece is black and it's Black's turn, or vice versa...
+                    if (pos1, pos2) in self.legalMoves: # If the movement is in the list of legal moves...
                         print(self.indextoACN(pos2, piece1))
                         self.moveHistory.append(self.indextoACN(pos2, piece1))
-                        self.whiteToMove = not self.whiteToMove
+                        self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
                         self.board[r2][c2] = piece1
                         self.board[r1][c1] = ""
 
     def indextoACN(self, pos2, piece):
-        newPos = [pos2[0] + 1, pos2[1] + 1]
+        newPos = [pos2[0] + 1, pos2[1] + 1] # 1-indexes, as is the case in chess
         row = newPos[0]
-        col = chr(newPos[1] + 96)
-        if piece[1] != "P":
-            acn = str(piece[1]) + str(col) + str(row)
+        col = chr(newPos[1] + 96) # Starts at a, b, c, ... using the chr function
+        if piece[1] != "P": # Pawn movements not usually denoted with an extra capital letter
+            acn = str(piece[1]) + str(col) + str(row) # String concatenation to form chess movements
         else:
             acn = str(col) + str(row)
         return acn
@@ -129,7 +129,7 @@ class Board():
                         valid.append(((r, c), (r + 2, c)))
         return valid
 
-    def loopedMoves(self, r, c, directions):
+    def loopedMoves(self, r, c, directions): # Rooks and bishops use the exact same loops to go through their directions
         valid = []
         rStart = r
         cStart = c
@@ -174,7 +174,7 @@ class Board():
         for i in directions:
             rNew = r + i[0]
             cNew = c + i[1]
-            if 0 <= rNew <= 7 and 0 <= cNew <= 7:
+            if 0 <= rNew <= 7 and 0 <= cNew <= 7: # Prevents IndexErrors
                 if self.board[rNew][cNew] == "":
                     valid.append(((r, c), (rNew, cNew)))
                 elif self.board[rNew][cNew][0] == "b" and self.whiteToMove:
@@ -187,7 +187,7 @@ class Board():
     def queenMoves(self, r, c):
         l1 = self.bishopMoves(r, c)
         l2 = self.rookMoves(r, c)
-        return l1 + l2
+        return l1 + l2 # Combines the moves of a rook and bishop
 
     def kingMoves(self, r, c):
         valid = []
