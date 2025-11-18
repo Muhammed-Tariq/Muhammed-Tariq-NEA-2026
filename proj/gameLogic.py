@@ -79,9 +79,13 @@ class Board():
                     if (pos1, pos2) in self.legalMoves: # If the movement is in the list of legal moves...
                         print(self.indextoACN(pos2, piece1))
                         self.moveHistory.append(self.indextoACN(pos2, piece1))
-                        self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
                         self.board[r2][c2] = piece1
                         self.board[r1][c1] = ""
+                        if piece1 == "wP" and r2 == 0: # Promotion
+                            self.board[r2][c2] = "wQ"
+                        elif piece1 == "bP" and r2 == 7:
+                            self.board[r2][c2] = "bQ"
+                        self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
 
     def indextoACN(self, pos2, piece):
         newPos = [pos2[0] + 1, pos2[1] + 1] # 1-indexes, as is the case in chess
@@ -134,6 +138,8 @@ class Board():
         rStart = r
         cStart = c
         for i in directions:
+            r = rStart
+            c = cStart
             while 0 <= r <= 7 and 0 <= c <= 7:
                 r = r + i[0]
                 c = c + i[1]
@@ -143,21 +149,13 @@ class Board():
                     valid.append(((rStart, cStart), (r, c)))
                 elif self.board[r][c][0] == "b" and self.whiteToMove:
                     valid.append(((rStart, cStart), (r, c)))
-                    r = rStart
-                    c = cStart
                     break
                 elif self.board[r][c][0] == "w" and not self.whiteToMove:
                     valid.append(((rStart, cStart), (r, c)))
-                    r = rStart
-                    c = cStart
                     break
                 elif self.board[r][c][0] == "w" and self.whiteToMove:
-                    r = rStart
-                    c = cStart
                     break
                 elif self.board[r][c][0] == "b" and not self.whiteToMove:
-                    r = rStart
-                    c = cStart
                     break
         return valid
 
@@ -183,7 +181,6 @@ class Board():
                     valid.append(((r, c), (rNew, cNew)))
         return valid
             
-
     def queenMoves(self, r, c):
         l1 = self.bishopMoves(r, c)
         l2 = self.rookMoves(r, c)
