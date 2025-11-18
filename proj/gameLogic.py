@@ -48,3 +48,11 @@ class Board():
             return int(row), int(col)
         return None
                 
+    def move(self, pos1, pos2):
+        if pos1 != None and pos2 != None:
+            r1, c1 = pos1
+            r2, c2 = pos2
+            piece1 = self.board[r1][c1]
+            if piece1 != "":
+                self.board[r2][c2] = piece1
+                self.board[r1][c1] = ""

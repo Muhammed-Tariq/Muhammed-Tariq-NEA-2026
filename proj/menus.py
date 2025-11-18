@@ -305,6 +305,7 @@ def singleplayer(timeSetting, playerSetting):
     screen.blit(boardTemp, boardRect)
 
     game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
+    clickCounter = 0
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -318,7 +319,6 @@ def singleplayer(timeSetting, playerSetting):
     playing = True
     while playing:
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
-        gl.Board.hoverSquare(game, py.mouse.get_pos())
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())
@@ -328,6 +328,18 @@ def singleplayer(timeSetting, playerSetting):
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
+                pos2 = gl.Board.hoverSquare(game, py.mouse.get_pos())
+                if clickCounter == 0:
+                    pos1 = pos2
+                    clickCounter += 1
+                elif clickCounter == 1:
+                    if pos1 == pos2:
+                        clickCounter = 0
+                        pos1 = None
+                        pos2 = None
+                    else:
+                        gl.Board.move(game, pos1, pos2)
+                        clickCounter = 0
                 if resignButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
