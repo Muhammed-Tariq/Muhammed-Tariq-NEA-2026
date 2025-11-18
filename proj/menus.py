@@ -29,6 +29,11 @@ SMALL_BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 35)
 BUTTON_IMAGE = py.image.load("assets/buttons/button.png")
 OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 
+# Image uploads
+
+pieceCodes = ["bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR"]
+pieceImages = [py.transform.scale(py.image.load(f"assets/pieceImages/{code}.png"), (BOARD_WIDTH / 8, BOARD_HEIGHT / 8)) for code in pieceCodes]
+
 # Validation
 
 def pgnValidation(data):
@@ -299,7 +304,7 @@ def singleplayer(timeSetting, playerSetting):
     boardRect = boardTemp.get_rect(center = (960, 500))
     screen.blit(boardTemp, boardRect)
 
-    game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#00235c"), py.Color("#619dff"))
+    game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -312,7 +317,7 @@ def singleplayer(timeSetting, playerSetting):
 
     playing = True
     while playing:
-        gl.Board.drawBoard(game, screen)
+        gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())

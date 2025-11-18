@@ -19,7 +19,7 @@ class Board():
         self.darkCol = darkCol
         self.lightCol = lightCol
 
-    def drawBoard(self, screen):
+    def drawBoard(self, screen, codes, images):
         x = 0 + self.position[0]
         y = 0 + self.position[1]
         for r in range(8):
@@ -29,6 +29,12 @@ class Board():
                     py.draw.rect(screen, self.lightCol, square)
                 else:
                     py.draw.rect(screen, self.darkCol, square)
+                piece = self.board[r][c]
+                try:
+                    pieceImage = images[codes.index(piece)]
+                    screen.blit(pieceImage, (x, y))
+                except:
+                    pass
                 x += self.squareSize
             x = 0 + self.position[0]
             y += self.squareSize
