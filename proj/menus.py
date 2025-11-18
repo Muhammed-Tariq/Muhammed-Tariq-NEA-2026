@@ -306,6 +306,7 @@ def singleplayer(timeSetting, playerSetting):
 
     game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
     clickCounter = 0
+    gl.Board.generateLegalMoves(game)
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -339,6 +340,7 @@ def singleplayer(timeSetting, playerSetting):
                         pos2 = None
                     else:
                         gl.Board.move(game, pos1, pos2)
+                        gl.Board.generateLegalMoves(game)
                         clickCounter = 0
                 if resignButton.hover(py.mouse.get_pos()):
                     mainMenu()

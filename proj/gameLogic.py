@@ -59,8 +59,6 @@ class Board():
                         self.legalMoves.extend(self.queenMoves(r, c))
                     elif self.board[r][c][1] == "K":
                         self.legalMoves.extend(self.kingMoves(r, c))
-                    
-
 
     def hoverSquare(self, mousePos):
         x = mousePos[0]
@@ -78,7 +76,7 @@ class Board():
             piece1 = self.board[r1][c1]
             if piece1 != "":
                 if (piece1[0] == "b" and self.whiteToMove == False) or (piece1[0] == "w" and self.whiteToMove == True):
-                    if [pos1, pos2] in self.legalMoves:
+                    if (pos1, pos2) in self.legalMoves:
                         print(self.indextoACN(pos2, piece1))
                         self.moveHistory.append(self.indextoACN(pos2, piece1))
                         self.whiteToMove = not self.whiteToMove
@@ -98,21 +96,110 @@ class Board():
     # Piece movements
 
     def pawnMoves(self, r, c):
-        pass
+        valid = []
+        if self.whiteToMove:
+            if r != 0:
+                if self.board[r - 1][c] == "":
+                    valid.append(((r, c), (r - 1, c)))
+                if c != 0:  # Diagonal left captures
+                    if self.board[r - 1][c - 1] != "":  # Prevents indexing a blank square
+                        if self.board[r - 1][c - 1][0] == "b":
+                            valid.append(((r, c), (r - 1, c - 1)))
+                if c != 7:  # Diagonal right captures
+                    if self.board[r - 1][c + 1] != "":
+                        if self.board[r - 1][c + 1][0] == "b":
+                            valid.append(((r, c), (r - 1, c + 1)))
+                if r == 6:
+                    if self.board[r - 1][c] == "" and self.board[r - 2][c] == "":
+                        valid.append(((r, c), (r - 2, c)))
+        else: # Reflected for Black
+            if r != 7:
+                if self.board[r + 1][c] == "":
+                    valid.append(((r, c), (r + 1, c)))
+                if c != 0:
+                    if self.board[r + 1][c - 1] != "":
+                        if self.board[r + 1][c - 1][0] == "w":
+                            valid.append(((r, c), (r + 1, c - 1)))
+                if c != 7:
+                    if self.board[r + 1][c + 1] != "":
+                        if self.board[r + 1][c + 1][0] == "w":
+                            valid.append(((r, c), (r + 1, c + 1)))
+                if r == 1:
+                    if self.board[r + 1][c] == "" and self.board[r + 2][c] == "":
+                        valid.append(((r, c), (r + 2, c)))
+        return valid
+
+    def loopedMoves(self, r, c, directions):
+        valid = []
+        rStart = r
+        cStart = c
+        for i in directions:
+            while 0 <= r <= 7 and 0 <= c <= 7:
+                r = r + i[0]
+                c = c + i[1]
+                if r > 7 or c > 7:
+                    break
+                if self.board[r][c] == "":
+                    valid.append(((rStart, cStart), (r, c)))
+                elif self.board[r][c][0] == "b" and self.whiteToMove:
+                    valid.append(((rStart, cStart), (r, c)))
+                    r = rStart
+                    c = cStart
+                    break
+                elif self.board[r][c][0] == "w" and not self.whiteToMove:
+                    valid.append(((rStart, cStart), (r, c)))
+                    r = rStart
+                    c = cStart
+                    break
+                elif self.board[r][c][0] == "w" and self.whiteToMove:
+                    r = rStart
+                    c = cStart
+                    break
+                elif self.board[r][c][0] == "b" and not self.whiteToMove:
+                    r = rStart
+                    c = cStart
+                    break
+        return valid
 
     def bishopMoves(self, r, c):
-        pass
+        return self.loopedMoves(r, c, [(-1, -1), (1, -1), (-1, 1), (1, 1)])
 
-    def knightMoves(self, r, c):
-        pass
 
     def rookMoves(self, r, c):
-        pass
+        return self.loopedMoves(r, c, [(1, 0), (0, 1), (-1, 0), (0, -1)])
+
+    def knightMoves(self, r, c):
+        valid = []
+        directions = [(-1, -2), (1, -2), (-2, -1), (-2, 1), (-1, 2), (1, 2), (2, 1), (2, -1)]
+        for i in directions:
+            rNew = r + i[0]
+            cNew = c + i[1]
+            if 0 <= rNew <= 7 and 0 <= cNew <= 7:
+                if self.board[rNew][cNew] == "":
+                    valid.append(((r, c), (rNew, cNew)))
+                elif self.board[rNew][cNew][0] == "b" and self.whiteToMove:
+                    valid.append(((r, c), (rNew, cNew)))
+                elif self.board[rNew][cNew][0] == "w" and not self.whiteToMove:
+                    valid.append(((r, c), (rNew, cNew)))
+        return valid
+            
 
     def queenMoves(self, r, c):
-        l1 = self.bishopMovements(self, r, c)
-        l2 = self.rookMovements(self, r, c)
+        l1 = self.bishopMoves(r, c)
+        l2 = self.rookMoves(r, c)
         return l1 + l2
 
     def kingMoves(self, r, c):
-        pass
+        valid = []
+        directions = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
+        for i in directions:
+            rNew = r + i[0]
+            cNew = c + i[1]
+            if 0 <= rNew <= 7 and 0 <= cNew <= 7:
+                if self.board[rNew][cNew] == "":
+                    valid.append(((r, c), (rNew, cNew)))
+                elif self.board[rNew][cNew][0] == "b" and self.whiteToMove:
+                    valid.append(((r, c), (rNew, cNew)))
+                elif self.board[rNew][cNew][0] == "w" and not self.whiteToMove:
+                    valid.append(((r, c), (rNew, cNew)))
+        return valid
