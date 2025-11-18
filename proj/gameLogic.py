@@ -54,5 +54,17 @@ class Board():
             r2, c2 = pos2
             piece1 = self.board[r1][c1]
             if piece1 != "":
+                print(self.indextoACN(pos2, piece1))
+                self.moveHistory.append(self.indextoACN(pos2, piece1))
                 self.board[r2][c2] = piece1
                 self.board[r1][c1] = ""
+
+    def indextoACN(self, pos2, piece):
+        newPos = [pos2[0] + 1, pos2[1] + 1]
+        row = newPos[0]
+        col = chr(newPos[1] + 96)
+        if piece[1] != "P":
+            acn = str(piece[1]) + str(col) + str(row)
+        else:
+            acn = str(col) + str(row)
+        return acn
