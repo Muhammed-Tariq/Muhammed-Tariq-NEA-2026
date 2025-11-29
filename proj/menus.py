@@ -4,13 +4,17 @@ import gameLogic as gl
 from tkinter import simpledialog
 from button import Buttons
 
+root = tk.Tk()
+root.withdraw()
 
-# Constants
+# Constants/variables to initialise
 
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 BOARD_WIDTH = 600
 BOARD_HEIGHT = 600
+
+clock = py.time.Clock()
 
 # Pygame display initialisation
 
@@ -41,6 +45,8 @@ def pgnValidation(data):
         return None
     try:
         move = list(map(str, data.split("\n"))) # Splits the data up by line breaks
+        whiteName = "White"
+        whiteName = "Black"
         for i in move:
             if i[0:6] == "[White":
                 whiteName = i[7:len(i) - 1] # Uses string slicing to obtain the names of each team
@@ -133,6 +139,7 @@ def mainMenu():
                     py.display.init()
                 if quitButton.hover(py.mouse.get_pos()):
                     playing = False
+        clock.tick(60)
                 
 
 def initialiseGame():
@@ -197,6 +204,7 @@ def initialiseGame():
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
 
 def analyseGame():
     # The game analysis game loop, which runs when analysisButton / "Analysis" is clicked
@@ -235,7 +243,7 @@ def analyseGame():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if analysisButton.hover(py.mouse.get_pos()):
-                    data = tk.simpledialog.askstring("Entry Window", "Enter PGN/FEN data") # Simpledialog to input data
+                    data = simpledialog.askstring("Entry Window", "Enter PGN/FEN data") # Simpledialog to input data
                     result = pgnValidation(data) # Validates data
                     if result == None:
                         pass
@@ -247,6 +255,7 @@ def analyseGame():
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
 
 def options():
     # The options game loop, which runs when optionsButton / "Options" is clicked
@@ -281,8 +290,8 @@ def options():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if colourButton.hover(py.mouse.get_pos()):
-                    colour1 = tk.simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper() # Entry window for hex codes, whitespace removed and capitalised
-                    colour2 = tk.simpledialog.askstring("Entry Window", "Enter dark-square hex code").strip().upper()
+                    colour1 = simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper() # Entry window for hex codes, whitespace removed and capitalised
+                    colour2 = simpledialog.askstring("Entry Window", "Enter dark-square hex code").strip().upper()
                     result1 = hexValidation(colour1)
                     result2 = hexValidation(colour2)
                     if not result1 or not result2:
@@ -293,6 +302,7 @@ def options():
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
 
 def singleplayer(timeSetting, playerSetting):
     # The singleplayer game loop, which runs when singleplayerButton / "Singleplayer" is clicked
@@ -305,7 +315,8 @@ def singleplayer(timeSetting, playerSetting):
     screen.blit(boardTemp, boardRect)
 
     game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
-    clickCounter = 0
+    selected = None
+    game.generateLegalMoves()
     gl.Board.generateLegalMoves(game)
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
@@ -329,19 +340,26 @@ def singleplayer(timeSetting, playerSetting):
                 playing = False
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
-                pos2 = gl.Board.hoverSquare(game, py.mouse.get_pos())
-                if clickCounter == 0:
-                    pos1 = pos2
-                    clickCounter += 1
-                elif clickCounter == 1:
-                    if pos1 == pos2:
-                        clickCounter = 0
-                        pos1 = None
-                        pos2 = None
+                mousePos = py.mouse.get_pos()
+                boardPos = game.hoverSquare(mousePos)
+                if boardPos is None: # Handles off-board clicks
+                    selected = None
+                    continue
+                r, c = boardPos
+                piece = game.board[r][c]
+                if selected is None:
+                    if piece != "" and ((piece[0] == "w" and game.whiteToMove) or (piece[0] == "b" and not game.whiteToMove)):
+                        selected = boardPos
+                else:
+                    if boardPos == selected:
+                        selected = None
                     else:
-                        gl.Board.move(game, pos1, pos2)
-                        gl.Board.generateLegalMoves(game)
-                        clickCounter = 0
+                        if game.move(selected, boardPos):
+                            game.generateLegalMoves()
+                            selected = None
+                        else:
+                            if piece != "" and ((piece[0] == "w" and game.whiteToMove) or (piece[0] == "b" and not game.whiteToMove)):
+                                selected = boardPos
                 if resignButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False
@@ -350,6 +368,7 @@ def singleplayer(timeSetting, playerSetting):
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
 
 def multiplayer(timeSetting, playerSetting):
     # The options game loop, which runs when multiplayerButton / "Multiplayer" is clicked
@@ -389,6 +408,7 @@ def multiplayer(timeSetting, playerSetting):
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
 
 mainMenu()
 py.quit()
