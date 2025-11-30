@@ -342,12 +342,12 @@ def singleplayer(timeSetting, playerSetting):
             if event.type == py.MOUSEBUTTONDOWN:
                 mousePos = py.mouse.get_pos()
                 boardPos = game.hoverSquare(mousePos)
-                if boardPos is None: # Handles off-board clicks
+                if boardPos == None: # Handles off-board clicks
                     selected = None
                     continue
                 r, c = boardPos
                 piece = game.board[r][c]
-                if selected is None:
+                if selected == None:
                     if piece != "" and ((piece[0] == "w" and game.whiteToMove) or (piece[0] == "b" and not game.whiteToMove)):
                         selected = boardPos
                 else:

@@ -19,6 +19,12 @@ class Board():
         self.squareSize = length / 8 # Board is 8x8
         self.darkCol = darkCol # Dark and light-coloured squares
         self.lightCol = lightCol
+        self.whiteCastle = True
+        self.whiteLeftRook = True
+        self.whiteRightRook = True
+        self.blackCastle = True
+        self.blackLeftRook = True
+        self.blackRightRook = True
 
     def drawBoard(self, screen, codes, images):
         x = 0 + self.position[0] # Offset by the position set by the user
@@ -59,6 +65,7 @@ class Board():
                         self.legalMoves.extend(self.queenMoves(r, c))
                     elif self.board[r][c][1] == "K":
                         self.legalMoves.extend(self.kingMoves(r, c))
+                        self.legalMoves.extend(self.castle(r, c))
 
     def hoverSquare(self, mousePos):
         x = mousePos[0]
@@ -70,7 +77,7 @@ class Board():
         return None
 
     def move(self, pos1, pos2):
-        if pos1 is None or pos2 is None: # Prevents None from being unpacked
+        if pos1 == None or pos2 == None: # Prevents None from being unpacked
             return False
         r1, c1 = pos1
         r2, c2 = pos2
@@ -205,3 +212,15 @@ class Board():
                 elif self.board[rNew][cNew][0] == "w" and not self.whiteToMove:
                     valid.append(((r, c), (rNew, cNew)))
         return valid
+    
+    def castle(self, r, c):
+        valid = []
+        if self.whiteToMove: # Castling
+            if self.board[7][0] == "":
+                self.whiteLeftRook = False
+            if self.board[7][7] == "":
+                self.whiteRightRook = False
+            if self.board[7][4] == "":
+                self.whiteCastle = False
+            if piece1 == "wK" and self.whiteCastle:
+                if self.board[7][5] == "" and self.board[7][6] == "":
