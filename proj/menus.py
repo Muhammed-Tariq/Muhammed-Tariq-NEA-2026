@@ -40,48 +40,6 @@ pieceImages = [py.transform.scale(py.image.load(f"assets/pieceImages/{code}.png"
 
 # Validation
 
-def pgnValidation(data):
-    if data == None or data == "": # If no data is entered, return "None" so nothing appears
-        return None
-    try:
-        move = list(map(str, data.split("\n"))) # Splits the data up by line breaks
-        whiteName = "White"
-        whiteName = "Black"
-        for i in move:
-            if i[0:6] == "[White":
-                whiteName = i[7:len(i) - 1] # Uses string slicing to obtain the names of each team
-            elif i[0:6] == "[Black":
-                blackName = i[7:len(i) - 1]
-
-        allMoves = list(map(str, move[len(move) - 1].split("."))) # Splits up by period "." to get each move sequence
-        allMoves.remove(allMoves[0]) # First element is always "1"
-
-        for i in range(len(allMoves) - 1): 
-            beginningTrim = allMoves[i][1:] # Removes the first character (whitespace) of a string
-            currentMove = allMoves[i]
-            if i < 8: # Removes 2 or 3 characters from the end depending on what the move is
-                endTrim = beginningTrim[:-2]
-                allMoves[i] = endTrim
-            if i >= 8:
-                endTrim = beginningTrim[:-3]
-                allMoves[i] = endTrim
-
-        flatMoves = []
-        for move in allMoves:
-            if "{" in move: 
-                move = move[:move.index("{")] # Removes comments
-            move = move.strip() # Removes whitespace
-            if not move:
-                continue
-            flatMoves.extend(move.split())
-
-        moves2D = []
-        for i in range(0, len(flatMoves) - 1, 2):
-            moves2D.append([flatMoves[i], flatMoves[i + 1]]) # Adds properly formatted moves
-        return moves2D, whiteName, blackName
-    except:
-        return False
-
 def hexValidation(data):
     if data == None or data == "": # If no data is entered, return "None" so nothing appears
         return None
@@ -107,12 +65,11 @@ def mainMenu():
     titleRect = titleText.get_rect(center = (960, 160)) # Rectangle for alignment
     screen.blit(titleText, titleRect)
 
-    playButton = Buttons((960, 400), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C") # Initialises buttons with the Buttons class
-    analysisButton = Buttons((960, 600), "assets/buttons/button.png", "Analysis", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    quitButton = Buttons((960, 800), "assets/buttons/button.png", "Quit", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    playButton = Buttons((960, 500), "assets/buttons/button.png", "Start Game", BUTTON_TEXT, "#FFFFFF", "#9C9C9C") # Initialises buttons with the Buttons class
+    quitButton = Buttons((960, 700), "assets/buttons/button.png", "Quit", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     optionsButton = Buttons((1820, 50), "assets/buttons/optionsButton.png", "Options", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [playButton, analysisButton, quitButton, optionsButton] # Iterated through to shorten code
+    allButtons = [playButton, quitButton, optionsButton] # Iterated through to shorten code
 
     playing = True # Game loop; true by default when a menu is opened
     while playing:
@@ -127,10 +84,6 @@ def mainMenu():
             if event.type == py.MOUSEBUTTONDOWN: # If the mouse button is clicked...
                 if playButton.hover(py.mouse.get_pos()): # ...and the mouse is hovering over one of the buttons...
                     initialiseGame() # ...an action occurs
-                    playing = False
-                    py.display.init()
-                if analysisButton.hover(py.mouse.get_pos()):
-                    analyseGame()
                     playing = False
                     py.display.init()
                 if optionsButton.hover(py.mouse.get_pos()):
@@ -200,57 +153,6 @@ def initialiseGame():
                     playerCounter += 1
                     playerCounter = playerCounter % len(playerSelectList)
                     playerSelectButton.draw(screen)
-                if backButton.hover(py.mouse.get_pos()):
-                    mainMenu()
-                    playing = False
-                    py.display.init()
-        clock.tick(60)
-
-def analyseGame():
-    # The game analysis game loop, which runs when analysisButton / "Analysis" is clicked
-
-    bg = py.image.load("assets/bg.png")
-    screen.blit(bg, (0, 0))
-
-    boardTemp = py.image.load("assets/placeholders/analysisplaceholder.png")
-    boardRect = boardTemp.get_rect(center = (960, 500))
-    screen.blit(boardTemp, boardRect)
-
-    titleText = BUTTON_TEXT.render("Analysis", True, "#FFFFFF") 
-    titleRect = titleText.get_rect(center = (960, 100))
-    screen.blit(titleText, titleRect)
-
-    errorText = BUTTON_TEXT.render("Error", True, "#FFFFFF") 
-    errorRect = errorText.get_rect(center = (960, 1000))
-
-    successText = BUTTON_TEXT.render("Success", True, "#FFFFFF") 
-    successRect = successText.get_rect(center = (960, 1000))
-
-    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    analysisButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Upload", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-
-    allButtons = [backButton, analysisButton]
-
-    playing = True
-    while playing:
-        py.display.flip()
-        for button in allButtons:
-            button.hover(py.mouse.get_pos())
-            button.draw(screen)
-        for event in py.event.get():
-            if event.type == py.QUIT:
-                playing = False
-                py.quit()
-            if event.type == py.MOUSEBUTTONDOWN:
-                if analysisButton.hover(py.mouse.get_pos()):
-                    data = simpledialog.askstring("Entry Window", "Enter PGN/FEN data") # Simpledialog to input data
-                    result = pgnValidation(data) # Validates data
-                    if result == None:
-                        pass
-                    elif result != False:
-                        screen.blit(successText, successRect)
-                    else:
-                        screen.blit(errorText, errorRect)
                 if backButton.hover(py.mouse.get_pos()):
                     mainMenu()
                     playing = False

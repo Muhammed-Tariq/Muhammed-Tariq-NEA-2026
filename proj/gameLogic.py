@@ -213,14 +213,14 @@ class Board():
                     valid.append(((r, c), (rNew, cNew)))
         return valid
     
-    def castle(self, r, c):
-        valid = []
-        if self.whiteToMove: # Castling
-            if self.board[7][0] == "":
-                self.whiteLeftRook = False
-            if self.board[7][7] == "":
-                self.whiteRightRook = False
-            if self.board[7][4] == "":
-                self.whiteCastle = False
-            if piece1 == "wK" and self.whiteCastle:
-                if self.board[7][5] == "" and self.board[7][6] == "":
+    # def castle(self, r, c):
+    #     valid = []
+    #     if self.whiteToMove: # Castling
+    #         if self.board[7][0] == "":
+    #             self.whiteLeftRook = False
+    #         if self.board[7][7] == "":
+    #             self.whiteRightRook = False
+    #         if self.board[7][4] == "":
+    #             self.whiteCastle = False
+    #         if piece1 == "wK" and self.whiteCastle:
+    #             if self.board[7][5] == "" and self.board[7][6] == "":
