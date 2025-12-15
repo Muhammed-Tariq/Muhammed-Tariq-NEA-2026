@@ -322,6 +322,7 @@ def singleplayer(timeSetting, playerSetting):
                     py.draw.rect(screen, "#000000", bgRect)
                     screen.blit(blackTimerText, blackTimerRect)
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
+        gl.Board.drawLegalMoves(game, screen, selected)
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())

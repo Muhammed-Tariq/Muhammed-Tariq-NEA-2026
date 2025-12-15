@@ -216,6 +216,42 @@ class Board():
                     valid.append(((r, c), (rNew, cNew)))
         return valid
     
+    def legalTargets(self, start): # Gets the legal moves for a piece
+        if start == None: # If nothing selected, there are no targets to highlight
+            return []
+        else:
+            targets = []
+            for (s, end) in self.legalMoves: # Iterates through every move in self.legalMoves and appends just the end squares where start matches that square
+                if s == start:
+                    targets.append(end)
+            return targets
+    
+    def drawLegalMoves(self, screen, start, colour = (130, 130, 130), transparency = 170, defaultRadius = 0.16, captureRadius = 0.22): # Colour is the colour of the circle, transparency is self-explanatory (0-255)
+        if start == None: # If nothing is selected, don't draw anything
+            return
+        sr, sc = start # Unpacks the selected row and selected column
+        mover = self.board[sr][sc] # Obtains selected square
+        if mover == "": # If selected square is empty, stop
+            return
+        moverColour = mover[0]  # "w" or "b", uses indexing
+        targets = self.legalTargets(start)
+        if not targets: # If there are no legal moves, there is nothing to draw
+            return
+        overlay = py.Surface((self.length, self.height), py.SRCALPHA) # Creates surface the size of the board
+        defaultR = int(self.squareSize * defaultRadius) # Computes radii based on square size
+        capR   = int(self.squareSize * captureRadius)
+        ringDiameter  = max(2, int(self.squareSize * 0.04)) # Thickness of ring
+        for (r, c) in targets: # Loop over every legal square
+            cx = int(c * self.squareSize + self.squareSize / 2) # Convert board coordinates into pixel coordinates of the center of the square
+            cy = int(r * self.squareSize + self.squareSize / 2)
+            targetPiece = self.board[r][c] # Obtain what is on the target square
+            capture = (targetPiece != "" and targetPiece[0] != moverColour) # True if target square has a piece of a different colour to the current one
+            if capture:
+                py.draw.circle(overlay, (*colour, transparency), (cx, cy), capR, width = ringDiameter) # Draws a ring around pieces that can be captured
+            else:
+                py.draw.circle(overlay, (*colour, transparency), (cx, cy), defaultR) # Draws a filled dot for default moves
+        screen.blit(overlay, self.position) # Offsets using self.position
+    
     # def castle(self, r, c):
     #     valid = []
     #     if self.whiteToMove: # Castling
