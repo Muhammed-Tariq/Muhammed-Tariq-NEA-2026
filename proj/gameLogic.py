@@ -1,4 +1,5 @@
 import pygame as py
+import time
 
 class Board():
     def __init__(self, position, length, height, darkCol, lightCol):
@@ -25,6 +26,7 @@ class Board():
         self.blackCastle = True
         self.blackLeftRook = True
         self.blackRightRook = True
+        self.firstMove = True
 
     def drawBoard(self, screen, codes, images):
         x = 0 + self.position[0] # Offset by the position set by the user
@@ -39,7 +41,7 @@ class Board():
                 piece = self.board[r][c]
                 try:
                     pieceImage = images[codes.index(piece)]
-                    screen.blit(pieceImage, (x, y)) # Draqws piece images
+                    screen.blit(pieceImage, (x, y)) # Draws piece images
                 except:
                     pass
                 x += self.squareSize # Increments x to move to the next square
@@ -65,7 +67,7 @@ class Board():
                         self.legalMoves.extend(self.queenMoves(r, c))
                     elif self.board[r][c][1] == "K":
                         self.legalMoves.extend(self.kingMoves(r, c))
-                        self.legalMoves.extend(self.castle(r, c))
+                        # self.legalMoves.extend(self.castle(r, c))
 
     def hoverSquare(self, mousePos):
         x = mousePos[0]
@@ -97,6 +99,7 @@ class Board():
         elif piece1 == "bP" and r2 == 7:
             self.board[r2][c2] = "bQ"
         self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
+        self.firstMove = False # For the timer logic
         return True
 
     def indextoACN(self, pos2, piece):
@@ -224,3 +227,4 @@ class Board():
     #             self.whiteCastle = False
     #         if piece1 == "wK" and self.whiteCastle:
     #             if self.board[7][5] == "" and self.board[7][6] == "":
+

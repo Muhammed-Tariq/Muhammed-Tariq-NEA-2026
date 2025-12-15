@@ -1,3 +1,4 @@
+import time
 import pygame as py
 import tkinter as tk
 import gameLogic as gl
@@ -30,6 +31,8 @@ TITLE = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 150)
 HEADER = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 100)
 BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 52)
 SMALL_BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 35)
+TIMER_TEXT = py.font.Font("assets/fonts/IBMPlexSans-SemiBold.ttf", 50)
+SMALL_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 25)
 BUTTON_IMAGE = py.image.load("assets/buttons/button.png")
 OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 
@@ -38,7 +41,7 @@ OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 pieceCodes = ["bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR"]
 pieceImages = [py.transform.scale(py.image.load(f"assets/pieceImages/{code}.png"), (BOARD_WIDTH / 8, BOARD_HEIGHT / 8)) for code in pieceCodes]
 
-# Validation
+# Functions and validation
 
 def hexValidation(data):
     if data == None or data == "": # If no data is entered, return "None" so nothing appears
@@ -209,10 +212,20 @@ def options():
 def singleplayer(timeSetting, playerSetting):
     # The singleplayer game loop, which runs when singleplayerButton / "Singleplayer" is clicked
 
+    convTime = int(timeSetting[:2].strip())
+    whiteMinutes = convTime
+    whiteSeconds = 0
+    blackMinutes = convTime
+    blackSeconds = 0
+
+    interval1 = 0
+    timeElapsed = 0
+    total = 0
+
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
-    boardTemp = py.image.load("assets/placeholders/gameplaceholder.png")
+    boardTemp = py.image.load("assets/boardImages/boardMenu.png")
     boardRect = boardTemp.get_rect(center = (960, 500))
     screen.blit(boardTemp, boardRect)
 
@@ -225,13 +238,89 @@ def singleplayer(timeSetting, playerSetting):
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
+    whiteText = SMALL_TEXT.render("White", True, "#FFFFFF")
+    whiteRect = whiteText.get_rect(center = (1260, 760))
+    screen.blit(whiteText, whiteRect)
+    blackText = SMALL_TEXT.render("Black", True, "#FFFFFF")
+    blackRect = blackText.get_rect(center = (1260, 235))
+    screen.blit(blackText, blackRect)
+    if whiteMinutes > 10:
+        zero = ""
+    else:
+        zero = "0"
+    whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + "00", True, "#FFFFFF")
+    whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
+    screen.blit(whiteTimerText, whiteTimerRect)
+    blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + "00", True, "#FFFFFF")
+    blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
+    screen.blit(blackTimerText, blackTimerRect)
+
     resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [resignButton, drawButton]
 
     playing = True
+    firstLoop = True
     while playing:
+        temp = interval1
+        interval1 = time.time()
+        if firstLoop:
+            timeElapsed = 0
+            firstLoop = False
+        else:
+            timeElapsed = interval1 - temp
+        total += timeElapsed
+        if total >= 1:
+            total = 0
+            timeElapsed = 0
+            if game.firstMove:
+                pass
+            else:
+                if game.whiteToMove:
+                    if whiteSeconds == 0:
+                        if whiteMinutes == 0:
+                            winner("Black")
+                            playing = False
+                            py.display.init()
+                        whiteMinutes -= 1
+                        whiteSeconds = 60
+                    whiteSeconds -= 1
+                    if whiteMinutes >= 10:
+                        zero = ""
+                    else:
+                        zero = "0"
+                    if whiteSeconds >= 10:
+                        sZero = ""
+                    else:
+                        sZero = "0"
+                    whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + sZero + str(whiteSeconds), True, "#FFFFFF")
+                    bgRect = whiteTimerRect.inflate(10, 5)
+                    py.draw.rect(screen, "#000000", bgRect)
+                    whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
+                    screen.blit(whiteTimerText, whiteTimerRect)
+                if not game.whiteToMove:
+                    if blackSeconds == 0:
+                        if blackMinutes == 0:
+                            winner("White")
+                            playing = False
+                            py.display.init()
+                        blackMinutes -= 1
+                        blackSeconds = 60
+                    blackSeconds -= 1
+                    if blackMinutes >= 10:
+                        zero = ""
+                    else:
+                        zero = "0"
+                    if blackSeconds >= 10:
+                        sZero = ""
+                    else:
+                        sZero = "0"
+                    blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + sZero + str(blackSeconds), True, "#FFFFFF")
+                    blackTimerRect = blackTimerText.get_rect(center = (1260, 285))
+                    bgRect = blackTimerRect.inflate(10, 5)
+                    py.draw.rect(screen, "#000000", bgRect)
+                    screen.blit(blackTimerText, blackTimerRect)
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
         py.display.flip()
         for button in allButtons:
@@ -278,7 +367,7 @@ def multiplayer(timeSetting, playerSetting):
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
-    boardTemp = py.image.load("assets/placeholders/gameplaceholder.png")
+    boardTemp = py.image.load("assets/boardImages/boardMenu.png")
     boardRect = boardTemp.get_rect(center = (960, 500))
     screen.blit(boardTemp, boardRect)
 
@@ -310,6 +399,41 @@ def multiplayer(timeSetting, playerSetting):
                     mainMenu()
                     playing = False
                     py.display.init()
+        clock.tick(60)
+
+def winner(result):
+    # The end-game loop, which runs when a game ends for any reason
+    bg = py.image.load("assets/bg.png")
+    screen.blit(bg, (0, 0))
+    if result == "White" or result == "Black":
+        titleText = HEADER.render(result + " wins!", True, "#FFFFFF")
+    else:
+        titleText = HEADER.render("Stalemate!", True, "#FFFFFF")
+    titleRect = titleText.get_rect(center = (960, 160))
+    screen.blit(titleText, titleRect)
+
+    playButton = Buttons((960, 500), "assets/buttons/button.png", "Rematch", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    menuButton = Buttons((960, 700), "assets/buttons/button.png", "Menu", BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+
+    allButtons = [playButton, menuButton]
+
+    playing = True
+    while playing:
+        py.display.flip()
+        for button in allButtons:
+            button.hover(py.mouse.get_pos())
+            button.draw(screen)
+        for event in py.event.get():
+            if event.type == py.QUIT:
+                playing = False
+                py.quit()
+            if event.type == py.MOUSEBUTTONDOWN:
+                if playButton.hover(py.mouse.get_pos()):
+                    initialiseGame()
+                    playing = False
+                    py.display.init()
+                if menuButton.hover(py.mouse.get_pos()):
+                    mainMenu()
         clock.tick(60)
 
 mainMenu()
