@@ -221,10 +221,11 @@ class Board():
             return []
         else:
             targets = []
-            for (s, end) in self.legalMoves: # Iterates through every move in self.legalMoves and appends just the end squares where start matches that square
-                if s == start:
-                    targets.append(end)
+            for move in self.legalMoves:
+                if move[0] == start:
+                    targets.append(move[1])
             return targets
+
     
     def drawLegalMoves(self, screen, start, colour = (130, 130, 130), transparency = 170, defaultRadius = 0.16, captureRadius = 0.22): # Colour is the colour of the circle, transparency is self-explanatory (0-255)
         if start == None: # If nothing is selected, don't draw anything
