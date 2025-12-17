@@ -33,6 +33,7 @@ BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 52)
 SMALL_BUTTON_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 35)
 TIMER_TEXT = py.font.Font("assets/fonts/IBMPlexSans-SemiBold.ttf", 50)
 SMALL_TEXT = py.font.Font("assets/fonts/RedditSans-Bold.ttf", 25)
+SMALLER_TEXT = py.font.Font("assets/fonts/RedditSans-Medium.ttf", 20)
 BUTTON_IMAGE = py.image.load("assets/buttons/button.png")
 OPTIONS_BUTTON_IMAGE = py.image.load("assets/buttons/optionsButton.png")
 
@@ -222,6 +223,8 @@ def singleplayer(timeSetting, playerSetting):
     timeElapsed = 0
     total = 0
 
+    movePairs = []
+
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
 
@@ -347,6 +350,19 @@ def singleplayer(timeSetting, playerSetting):
                         selected = None
                     else:
                         if game.move(selected, boardPos):
+                            print(game.moveHistory[-1]) # Debugging
+                            index = len(game.moveHistory) - 1
+                            turn = index // 2 + 1
+                            movePairs.append(game.moveHistory[-1])
+                            if len(movePairs) == 2:
+                                move = str(turn) + ". " + str(movePairs[0]) + " " + str(movePairs[1])
+                                movePairs = []
+                                moveText = SMALLER_TEXT.render(move, True, "#FFFFFF")
+                                moveRect = moveText.get_rect(topleft=(1195, 325 + (15 * ((len(game.moveHistory) - 2) % 22))))
+                                if (len(game.moveHistory) - 2) % 22 == 0 and len(game.moveHistory) > 2:
+                                    wipeRect = py.Rect(1195, moveRect.top, 150, (650 - moveRect.top))
+                                    py.draw.rect(screen, (0, 0, 0), wipeRect)
+                                screen.blit(moveText, moveRect)
                             game.generateLegalMoves()
                             selected = None
                         else:

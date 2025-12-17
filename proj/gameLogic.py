@@ -27,6 +27,7 @@ class Board():
         self.blackRightRook = True
         self.firstMove = True
 
+
     def drawBoard(self, screen, codes, images):
         x = 0 + self.position[0] # Offset by the position set by the user
         y = 0 + self.position[1]
@@ -89,8 +90,9 @@ class Board():
             return False
         if (pos1, pos2) not in self.legalMoves: # If the movement isn't in the list of legal moves...
             return False
-        print(self.indextoACN(pos2, piece1))
-        self.moveHistory.append(self.indextoACN(pos2, piece1))
+        # print(self.indextoACN(pos1, pos2, piece1))
+        # self.displayMove(self.indextoACN(pos1, pos2, piece1))
+        self.moveHistory.append(self.indextoACN(pos1, pos2, piece1))
         self.board[r2][c2] = piece1
         self.board[r1][c1] = ""
         if piece1 == "wP" and r2 == 0: # Promotion
@@ -101,14 +103,27 @@ class Board():
         self.firstMove = False # For the timer logic
         return True
 
-    def indextoACN(self, pos2, piece):
-        newPos = [pos2[0] + 1, pos2[1] + 1] # 1-indexes, as is the case in chess
-        row = newPos[0]
-        col = chr(newPos[1] + 96) # Starts at a, b, c, ... using the chr function
-        if piece[1] != "P": # Pawn movements not usually denoted with an extra capital letter
-            acn = str(piece[1]) + str(col) + str(row) # String concatenation to form chess movements
+    def indextoACN(self, pos1, pos2, piece):
+        if piece == "":
+            return ""
+        r1, c1, = pos1
+        r2, c2 = pos2
+        newPos1 = [pos1[0] + 1, pos1[1] + 1]
+        newPos2 = [pos2[0] + 1, pos2[1] + 1] # 1-indexes, as is the case in chess
+        row1 = 9 - newPos1[0]
+        col1 = chr(newPos1[1] + 96)
+        row2 = 9 - newPos2[0]
+        col2 = chr(newPos2[1] + 96) # Starts at a, b, c, ... using the chr function
+        if piece[1] != "P":
+            if self.board[r2][c2] != "":
+                acn = str(piece[1]) + "x" + str(col2) + str(row2)
+            else:
+                acn = str(piece[1]) + str(col2) + str(row2)
         else:
-            acn = str(col) + str(row)
+            if self.board[r2][c2] != "":
+                acn = str(col1) + "x" + str(col2) + str(row2)
+            else:
+                acn = str(col2) + str(row2)
         return acn
     
     # Piece movements
