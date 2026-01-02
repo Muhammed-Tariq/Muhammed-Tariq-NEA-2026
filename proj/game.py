@@ -364,6 +364,21 @@ def singleplayer(timeSetting, playerSetting):
                                     py.draw.rect(screen, (0, 0, 0), wipeRect)
                                 screen.blit(moveText, moveRect)
                             game.generateLegalMoves()
+                            if len(game.legalMoves) == 0:
+                                if game.whiteToMove:
+                                    if game.inCheck("w"):
+                                        winner("Black")
+                                    else:
+                                        winner("Stalemate")
+                                else:
+                                    if game.inCheck("b"):
+                                        winner("White")
+                                    else:
+                                        winner("Stalemate")
+                                playing = False
+                                py.display.init()
+                                selected = None
+                                continue
                             selected = None
                         else:
                             if piece != "" and ((piece[0] == "w" and game.whiteToMove) or (piece[0] == "b" and not game.whiteToMove)):
@@ -379,7 +394,7 @@ def singleplayer(timeSetting, playerSetting):
         clock.tick(60)
 
 def multiplayer(timeSetting, playerSetting):
-    # The options game loop, which runs when multiplayerButton / "Multiplayer" is clicked
+    # The multiplayer game loop, which runs when multiplayerButton / "Multiplayer" is clicked
 
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))
