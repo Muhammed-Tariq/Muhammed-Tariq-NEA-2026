@@ -1,4 +1,5 @@
 import gameLogic as gl
+import math
 
 # Piece-square tables
 
@@ -68,8 +69,7 @@ kingMobilityW = [[-30, -40, -40, -50, -50, -40, -40, -30],
 
 kingMobilityB = kingMobilityW[::-1]
 
-def mirrorPosition(pieceSquareTable):
-    return pieceSquareTable[::-1] # Flips top-to-bottom
+
 
 
 # Evaluation calculators
@@ -112,6 +112,9 @@ def calculateMobility(board):
                     score = rookMobilityW[r][c] / 100
                 elif board[r][c][1] == "Q":
                     score = queenMobilityW[r][c] / 100
+                elif board[r][c][1] == "K":
+                    score = kingMobilityW[r][c] / 100
+                eval += score
             else:
                 if board[r][c][1] == "P":
                     score = pawnMobilityB[r][c] / 100
@@ -123,8 +126,117 @@ def calculateMobility(board):
                     score = rookMobilityB[r][c] / 100
                 elif board[r][c][1] == "Q":
                     score = queenMobilityB[r][c] / 100
-            eval += score
+                elif board[r][c][1] == "K":
+                    score = kingMobilityB[r][c] / 100
+                eval -= score
     return eval
 
 def calculateEvaluation(board):
     return calculateMobility(board) + calculateMaterial(board)
+
+
+# Save/restore game
+
+
+def saveState(game):
+    board = []
+    for row in game.board:
+        board.append(row[:])
+    return (board, game.whiteToMove, list(game.enPassantMoves), game.enPassant, game.whiteCastle, game.whiteLeftRook, game.whiteRightRook, game.blackCastle, game.blackLeftRook, game.blackRightRook, game.firstMove, game.check)
+     
+def restoreState(game, state):
+    (board, whiteToMove, enPassantMoves, enPassant, whiteCastle, whiteLeftRook, whiteRightRook, blackCastle, blackLeftRook, blackRightRook, firstMove, check) = state
+    boardCopy = []
+    for row in board:
+        boardCopy.append(row[:])
+    game.board = boardCopy
+    game.whiteToMove = whiteToMove
+    game.enPassantMoves = list(enPassantMoves)
+    game.enPassant = enPassant
+    game.whiteCastle = whiteCastle
+    game.whiteLeftRook = whiteLeftRook
+    game.whiteRightRook = whiteRightRook
+    game.blackCastle = blackCastle
+    game.blackLeftRook = blackLeftRook
+    game.blackRightRook = blackRightRook
+    game.firstMove = firstMove
+    game.check = check
+
+
+# Minimax and alpha-beta
+
+
+def alphaBeta(game, depth, alpha, beta):
+    game.generateLegalMoves()
+    moves = game.legalMoves
+    if len(moves) == 0:
+        if game.whiteToMove:
+            side = "w"
+        else: 
+            side = "b"
+        if game.inCheck(side):
+            if game.whiteToMove:
+                return -10000 # Black checkmate
+            else: 
+                return 10000  # White checkmate
+        return 0  # Stalemate
+    if depth == 0:
+        return calculateEvaluation(game.board)
+    if game.whiteToMove:
+        value = -math.inf
+        for move in moves:
+                state = saveState(game) # Saves the current state
+                start, end = move
+                game.noChangeMove(start, end)
+                game.whiteToMove = not game.whiteToMove
+                value = max(value, alphaBeta(game, depth - 1, alpha, beta))
+                restoreState(game, state) # Restores the current state
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+        return value
+    else:
+        value = math.inf
+        for move in moves:
+                state = saveState(game)
+                start, end = move
+                game.noChangeMove(start, end)
+                game.whiteToMove = not game.whiteToMove
+                value = min(value, alphaBeta(game, depth - 1, alpha, beta))
+                restoreState(game, state)
+                beta = min(beta, value)
+                if alpha >= beta:
+                    break
+        return value
+    
+def chooseMove(game, depth):
+    game.generateLegalMoves()
+    moves = game.legalMoves
+    if len(moves) == 0:
+        return None
+    bestMove = None
+    if game.whiteToMove:
+        bestValue = -math.inf
+        for move in moves:
+            state = saveState(game)
+            start, end = move
+            game.noChangeMove(start, end)
+            game.whiteToMove = not game.whiteToMove
+            value = alphaBeta(game, depth - 1, -math.inf, math.inf)
+            restoreState(game, state)
+            if value > bestValue:
+                bestValue = value
+                bestMove = move
+    else:
+        bestValue = math.inf
+        for move in moves:
+            state = saveState(game)
+            start, end = move
+            game.noChangeMove(start, end)
+            game.whiteToMove = not game.whiteToMove
+            value = alphaBeta(game, depth - 1, -math.inf, math.inf)
+            restoreState(game, state)
+            if value < bestValue:
+                bestValue = value
+                bestMove = move
+    return bestMove

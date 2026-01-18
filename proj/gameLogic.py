@@ -145,7 +145,6 @@ class Board():
         elif pos1 == (0, 4) and pos2 == (0, 2):
             self.board[0][0] = ""
             self.board[0][3] = "bR"
-        evaluation = en.calculateEvaluation(self.board)
         self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
         if self.whiteToMove:
             side = "w" 
@@ -380,6 +379,16 @@ class Board():
         r1, c1 = pos1
         r2, c2 = pos2
         piece1 = self.board[r1][c1]
+        if piece1 == "wP" and r1 == 6 and r2 == 4 and c1 == c2:
+            if c2 > 0 and self.board[r2][c2 - 1] == "bP":
+                self.enPassantMoves.append(((r2, c2 - 1), (r2 + 1, c2)))
+            if c2 < 7 and self.board[r2][c2 + 1] == "bP":
+                self.enPassantMoves.append(((r2, c2 + 1), (r2 + 1, c2)))
+        elif piece1 == "bP" and r1 == 1 and r2 == 3 and c1 == c2:
+            if c2 > 0 and self.board[r2][c2 - 1] == "wP":
+                self.enPassantMoves.append(((r2, c2 - 1), (r2 - 1, c2)))
+            if c2 < 7 and self.board[r2][c2 + 1] == "wP":
+                self.enPassantMoves.append(((r2, c2 + 1), (r2 - 1, c2)))
         if piece1 == "wP" and abs(r2 - r1) == 1 and abs(c2 - c1) == 1 and self.board[r2][c2] == "": # En passant captures
             self.enPassant = -1
             r2 += 1
