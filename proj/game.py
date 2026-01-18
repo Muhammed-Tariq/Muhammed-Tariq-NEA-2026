@@ -210,8 +210,8 @@ def options():
                     py.display.init()
         clock.tick(60)
 
-def singleplayer(timeSetting, playerSetting):
-    # The singleplayer game loop, which runs when singleplayerButton / "Singleplayer" is clicked
+def multiplayer(timeSetting, playerSetting):
+    # The multiplayer game loop, which runs when multiplayerButton / "Multiplayer" is clicked
 
     convTime = int(timeSetting[:2].strip())
     whiteMinutes = convTime
@@ -237,7 +237,7 @@ def singleplayer(timeSetting, playerSetting):
     game.generateLegalMoves()
     gl.Board.generateLegalMoves(game)
 
-    titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
+    titleText = BUTTON_TEXT.render("Multiplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
 
@@ -258,10 +258,9 @@ def singleplayer(timeSetting, playerSetting):
     blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
     screen.blit(blackTimerText, blackTimerRect)
 
-    resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [resignButton, drawButton]
+    allButtons = [backButton]
 
     playing = True
     firstLoop = True
@@ -324,8 +323,9 @@ def singleplayer(timeSetting, playerSetting):
                     bgRect = blackTimerRect.inflate(10, 5)
                     py.draw.rect(screen, "#000000", bgRect)
                     screen.blit(blackTimerText, blackTimerRect)
-        gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
-        gl.Board.drawLegalMoves(game, screen, selected)
+        flip = not game.whiteToMove
+        gl.Board.drawBoard(game, screen, pieceCodes, pieceImages, flip = flip)
+        gl.Board.drawLegalMoves(game, screen, selected, flip = flip)
         py.display.flip()
         for button in allButtons:
             button.hover(py.mouse.get_pos())
@@ -337,6 +337,13 @@ def singleplayer(timeSetting, playerSetting):
             if event.type == py.MOUSEBUTTONDOWN:
                 mousePos = py.mouse.get_pos()
                 boardPos = game.hoverSquare(mousePos)
+                if backButton.hover(py.mouse.get_pos()):
+                    mainMenu()
+                    playing = False
+                    py.display.init()
+                if boardPos != None and flip:
+                    r, c = boardPos
+                    boardPos = (7 - r, 7 -c)
                 if boardPos == None: # Handles off-board clicks
                     selected = None
                     continue
@@ -383,18 +390,10 @@ def singleplayer(timeSetting, playerSetting):
                         else:
                             if piece != "" and ((piece[0] == "w" and game.whiteToMove) or (piece[0] == "b" and not game.whiteToMove)):
                                 selected = boardPos
-                if resignButton.hover(py.mouse.get_pos()):
-                    mainMenu()
-                    playing = False
-                    py.display.init()
-                if drawButton.hover(py.mouse.get_pos()):
-                    mainMenu()
-                    playing = False
-                    py.display.init()
         clock.tick(60)
 
-def multiplayer(timeSetting, playerSetting):
-    # The multiplayer game loop, which runs when multiplayerButton / "Multiplayer" is clicked
+def singleplayer(timeSetting, playerSetting):
+    # The singleplayer game loop, which runs when singleplayerButton / "Singleplayer" is clicked
 
     bg = py.image.load("assets/bg.png")
     screen.blit(bg, (0, 0))

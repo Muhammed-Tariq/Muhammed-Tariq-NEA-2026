@@ -1,4 +1,5 @@
 import pygame as py
+import engine as en
 
 class Board():
     def __init__(self, position, length, height, darkCol, lightCol):
@@ -31,16 +32,19 @@ class Board():
         self.ssLegalMoves = []
         self.check = False
 
-    def drawBoard(self, screen, codes, images):
-        x = 0 + self.position[0] # Offset by the position set by the user
-        y = 0 + self.position[1]
+    def drawBoard(self, screen, codes, images, flip = False):
         for r in range(8):
             for c in range(8):
+                x = 0 + self.position[0] + c * self.squareSize
+                y = 0 + self.position[1] + r * self.squareSize
                 square = py.Rect(x, y, self.squareSize, self.squareSize)
                 if (r + c) % 2 == 0: # Modulus to alternate between light and dark squares
                     py.draw.rect(screen, self.lightCol, square)
                 else:
                     py.draw.rect(screen, self.darkCol, square)
+                if flip:
+                    r = 7 - r
+                    c = 7 - c
                 piece = self.board[r][c]
                 try:
                     pieceImage = images[codes.index(piece)]
@@ -141,6 +145,7 @@ class Board():
         elif pos1 == (0, 4) and pos2 == (0, 2):
             self.board[0][0] = ""
             self.board[0][3] = "bR"
+        evaluation = en.calculateEvaluation(self.board)
         self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
         if self.whiteToMove:
             side = "w" 
@@ -324,7 +329,7 @@ class Board():
                     targets.append(move[1])
             return targets
         
-    def drawLegalMoves(self, screen, start, colour = (130, 130, 130), transparency = 170, defaultRadius = 0.16, captureRadius = 0.22): # Colour is the colour of the circle, transparency is self-explanatory (0-255)
+    def drawLegalMoves(self, screen, start, colour = (130, 130, 130), transparency = 170, defaultRadius = 0.16, captureRadius = 0.22, flip = False): # Colour is the colour of the circle, transparency is self-explanatory (0-255)
         if start == None: # If nothing is selected, don't draw anything
             return
         sr, sc = start # Unpacks the selected row and selected column
@@ -336,10 +341,14 @@ class Board():
         overlay = py.Surface((self.length, self.height), py.SRCALPHA) # Creates surface the size of the board
         defaultR = int(self.squareSize * defaultRadius) # Computes radii based on square size
         capR = int(self.squareSize * captureRadius)
-        ringDiameter  = int(self.squareSize * 0.04) # Thickness of ring
+        ringDiameter  = int(self.squareSize * 0.04)
         for (r, c) in targets: # Loop over every legal square
-            cx = int(c * self.squareSize + self.squareSize / 2) # Convert board coordinates into pixel coordinates of the center of the square
-            cy = int(r * self.squareSize + self.squareSize / 2)
+            if flip:
+                rd, cd = (7 - r, 7 - c)
+            else:
+                rd, cd = (r, c)
+            cx = int(cd * self.squareSize + self.squareSize / 2) # Convert board coordinates into pixel coordinates of the center of the square
+            cy = int(rd * self.squareSize + self.squareSize / 2)
             targetPiece = self.board[r][c] # Obtain what is on the target square
             enPassant = 0
             if mover[1] == "P" and targetPiece == "" and abs(r - sr) == 1 and abs(c - sc) == 1:
