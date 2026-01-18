@@ -472,11 +472,11 @@ def singleplayer(timeSetting, playerSetting, difficulty):
         playerSetting = random.choice(["White", "Black"])
     humanWhite = (playerSetting == "White")
     if difficulty == "E":
-        depth = 3
+        depth = 1
     elif difficulty == "M":
-        depth = 4
+        depth = 2
     elif difficulty == "H":
-        depth = 5
+        depth = 3
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -499,9 +499,11 @@ def singleplayer(timeSetting, playerSetting, difficulty):
     blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
     screen.blit(blackTimerText, blackTimerRect)
 
+    resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [backButton]
+    allButtons = [resignButton, drawButton, backButton]
 
     playing = True
     firstLoop = True
@@ -569,6 +571,19 @@ def singleplayer(timeSetting, playerSetting, difficulty):
         py.display.flip()
         if (game.whiteToMove and not humanWhite) or (not game.whiteToMove and humanWhite): # If it's the engine's turn...
             move = en.chooseMove(game, depth)
+            if move is None:
+                game.generateLegalMoves()  # (safe even though chooseMove already did)
+                if len(game.legalMoves) == 0:
+                    if game.whiteToMove:
+                        if game.inCheck("w"):
+                            winner("Black")
+                        else:
+                            winner("Stalemate")
+                    else:
+                        if game.inCheck("b"):
+                            winner("White")
+                        else:
+                            winner("Stalemate")
             if game.move(move[0], move[1]):
                 print(game.moveHistory[-1]) # Debugging
                 index = len(game.moveHistory) - 1
@@ -598,6 +613,19 @@ def singleplayer(timeSetting, playerSetting, difficulty):
                     mainMenu()
                     playing = False
                     py.display.init()
+                if resignButton.hover(py.mouse.get_pos()):
+                    if humanWhite:
+                        winner("Black")
+                    else:
+                        winner("White")
+                if drawButton.hover(py.mouse.get_pos()):
+                    evaluation = en.calculateEvaluation(game.board)
+                    if humanWhite:
+                        if evaluation >= 0:
+                            winner("Stalemate")
+                    else:
+                        if evaluation <= 0:
+                            winner("Stalemate")
                 if boardPos == None: # Handles off-board clicks
                     selected = None
                     continue

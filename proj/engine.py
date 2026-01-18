@@ -167,6 +167,8 @@ def restoreState(game, state):
 
 
 def alphaBeta(game, depth, alpha, beta):
+    if depth <= 0:
+        return calculateEvaluation(game.board)
     game.generateLegalMoves()
     moves = game.legalMoves
     if len(moves) == 0:
@@ -180,8 +182,6 @@ def alphaBeta(game, depth, alpha, beta):
             else: 
                 return 10000  # White checkmate
         return 0  # Stalemate
-    if depth == 0:
-        return calculateEvaluation(game.board)
     if game.whiteToMove:
         value = -math.inf
         for move in moves:
