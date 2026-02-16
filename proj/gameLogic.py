@@ -31,8 +31,13 @@ class Board():
         self.enPassant = 0
         self.ssLegalMoves = []
         self.check = False
+        self.castlingMoves = []
+        self.previousMove = None
 
     def drawBoard(self, screen, codes, images, flip = False):
+        if self.previousMove is not None:
+            ox, oy = self.previousMove[0]
+            dx, dy = self.previousMove[1]
         for r in range(8):
             for c in range(8):
                 x = 0 + self.position[0] + c * self.squareSize
@@ -43,9 +48,17 @@ class Board():
                 else:
                     py.draw.rect(screen, self.darkCol, square)
                 if flip:
-                    r = 7 - r
-                    c = 7 - c
-                piece = self.board[r][c]
+                    rF = 7 - r
+                    cF = 7 - c
+                else:
+                    rF = r
+                    cF = c
+                if self.previousMove is not None:
+                    if rF == ox and cF == oy:
+                        py.draw.rect(screen, "#ff7b30", square)
+                    elif rF == dx and cF == dy:
+                        py.draw.rect(screen, "#ffd0b5", square)
+                piece = self.board[rF][cF]
                 try:
                     pieceImage = images[codes.index(piece)]
                     screen.blit(pieceImage, (x, y)) # Draws piece images
@@ -59,6 +72,7 @@ class Board():
         self.legalMoves = []
         self.legalMoves.extend(self.enPassantMoves)
         self.enPassantMoves = []
+        self.castlingMoves = []
         for r in range(8):
             for c in range(8):
                 if self.board[r][c] == "": # Prevents indexing a blank string
@@ -77,6 +91,7 @@ class Board():
                     elif self.board[r][c][1] == "K":
                         self.legalMoves.extend(self.kingMoves(r, c))
                         self.legalMoves.extend(self.castle())
+                        self.castlingMoves.extend(self.castle())
         if filterCheck:
             self.legalMoves = self.filterMoves(self.legalMoves)
 
@@ -115,6 +130,7 @@ class Board():
             r2 -= 1
             pos2 = (r2, c2)
         self.moveHistory.append(self.indextoACN(pos1, pos2, piece1))
+        self.previousMove = (pos1, pos2)
         self.board[r2 + self.enPassant][c2] = piece1
         self.board[r1][c1] = ""
         if self.enPassant != 0:
@@ -133,18 +149,38 @@ class Board():
             self.board[r2][c2] = "wQ"
         elif piece1 == "bP" and r2 == 7:
             self.board[r2][c2] = "bQ"
-        if pos1 == (7, 4) and pos2 == (7, 6): # Castling
+        if pos1 == (7, 4) and pos2 == (7, 6) and self.whiteCastle and self.whiteRightRook: # Castling
             self.board[7][7] = ""
             self.board[7][5] = "wR"
-        elif pos1 == (7, 4) and pos2 == (7, 2):
+            self.whiteCastle = False
+        elif pos1 == (7, 4) and pos2 == (7, 2) and self.whiteCastle and self.whiteLeftRook:
             self.board[7][0] = ""
             self.board[7][3] = "wR"
-        elif pos1 == (0, 4) and pos2 == (0, 6):
+            self.whiteCastle = False
+        elif pos1 == (0, 4) and pos2 == (0, 6) and self.blackCastle and self.blackRightRook:
             self.board[0][7] = ""
             self.board[0][5] = "bR"
-        elif pos1 == (0, 4) and pos2 == (0, 2):
+            self.blackCastle = False
+        elif pos1 == (0, 4) and pos2 == (0, 2) and self.blackCastle and self.blackRightRook:
             self.board[0][0] = ""
             self.board[0][3] = "bR"
+            self.blackCastle = False
+        if piece1 == "wK":
+            self.whiteCastle = False
+        if piece1 == "bK":
+            self.blackCastle = False
+        if pos1 == (7, 7) or pos2 == (7, 7):
+            self.whiteRightRook = False
+        if pos1 == (7, 0) or pos2 == (7, 0):
+            self.whiteLeftRook = False
+        if pos1 == (0, 7) or pos2 == (0, 7):
+            self.blackRightRook = False
+        if pos1 == (0, 0) or pos2 == (0, 0):
+            self.blackLeftRook = False
+        if not (self.whiteLeftRook or self.whiteRightRook):
+            self.whiteCastle = False
+        if not (self.blackLeftRook or self.blackRightRook):
+            self.blackCastle = False
         self.whiteToMove = not self.whiteToMove # Change turns (white to black/black to white)
         if self.whiteToMove:
             side = "w" 
@@ -291,24 +327,12 @@ class Board():
     def castle(self):
         valid = []
         if self.whiteToMove: # Castling for White
-            if self.board[7][0] == "":
-                self.whiteLeftRook = False
-            if self.board[7][7] == "":
-                self.whiteRightRook = False
-            if self.board[7][4] == "":
-                self.whiteCastle = False
             if self.whiteCastle:
                 if self.board[7][5] == "" and self.board[7][6] == "" and self.whiteRightRook:
                     valid.append(((7, 4), (7, 6)))
                 if self.board[7][1] == "" and self.board[7][2] == "" and self.board[7][3] == "" and self.whiteLeftRook:
                     valid.append(((7, 4), (7, 2)))
         else: # Castling for Black
-            if self.board[0][0] == "":
-                self.blackLeftRook = False
-            if self.board[0][7] == "":
-                self.blackRightRook = False
-            if self.board[0][4] == "":
-                self.blackCastle = False
             if self.blackCastle:
                 if self.board[0][5] == "" and self.board[0][6] == "" and self.blackRightRook:
                     valid.append(((0, 4), (0, 6)))
@@ -405,18 +429,38 @@ class Board():
             self.board[r2][c2] = "wQ"
         elif piece1 == "bP" and r2 == 7:
             self.board[r2][c2] = "bQ"
-        if pos1 == (7, 4) and pos2 == (7, 6): # Castling
+        if pos1 == (7, 4) and pos2 == (7, 6) and self.whiteCastle and self.whiteRightRook: # Castling
             self.board[7][7] = ""
             self.board[7][5] = "wR"
-        elif pos1 == (7, 4) and pos2 == (7, 2):
+            self.whiteCastle = False
+        elif pos1 == (7, 4) and pos2 == (7, 2) and self.whiteCastle and self.whiteLeftRook:
             self.board[7][0] = ""
             self.board[7][3] = "wR"
-        elif pos1 == (0, 4) and pos2 == (0, 6):
+            self.whiteCastle = False
+        elif pos1 == (0, 4) and pos2 == (0, 6) and self.blackCastle and self.blackRightRook:
             self.board[0][7] = ""
             self.board[0][5] = "bR"
-        elif pos1 == (0, 4) and pos2 == (0, 2):
+            self.blackCastle = False
+        elif pos1 == (0, 4) and pos2 == (0, 2) and self.blackCastle and self.blackRightRook:
             self.board[0][0] = ""
             self.board[0][3] = "bR"
+            self.blackCastle = False
+        if piece1 == "wK":
+            self.whiteCastle = False
+        if piece1 == "bK":
+            self.blackCastle = False
+        if pos1 == (7, 7) or pos2 == (7, 7):
+            self.whiteRightRook = False
+        if pos1 == (7, 0) or pos2 == (7, 0):
+            self.whiteLeftRook = False
+        if pos1 == (0, 7) or pos2 == (0, 7):
+            self.blackRightRook = False
+        if pos1 == (0, 0) or pos2 == (0, 0):
+            self.blackLeftRook = False
+        if not (self.whiteLeftRook or self.whiteRightRook):
+            self.whiteCastle = False
+        if not (self.blackLeftRook or self.blackRightRook):
+            self.blackCastle = False
 
     def filterMoves(self, moves):
         keptMoves = []
@@ -430,6 +474,12 @@ class Board():
             backupEP = self.enPassant
             backupLegalMoves = list(self.legalMoves)
             backupTurn = self.whiteToMove  # Always restore the turn being made
+            backupWhiteCastle = self.whiteCastle
+            backupWhiteLeftRook = self.whiteLeftRook
+            backupWhiteRightRook = self.whiteRightRook
+            backupBlackCastle = self.blackCastle
+            backupBlackLeftRook = self.blackLeftRook
+            backupBlackRightRook = self.blackRightRook
             self.noChangeMove(start, end) # Testing the move
             kingPos = self.kingPos() # King position after test move, as the king may have been moved
             self.whiteToMove = not self.whiteToMove
@@ -458,6 +508,10 @@ class Board():
                 if m[1] == kingPos:
                     kingAttacked = True
                     break
+            if self.whiteToMove:
+                side = "w"
+            else:
+                side = "b"
             if not kingAttacked:
                 keptMoves.append((start, end))
             self.board = backupBoard
@@ -465,6 +519,14 @@ class Board():
             self.enPassant = backupEP
             self.legalMoves = backupLegalMoves
             self.whiteToMove = backupTurn
+            self.whiteCastle = backupWhiteCastle
+            self.whiteLeftRook = backupWhiteLeftRook
+            self.whiteRightRook = backupWhiteRightRook
+            self.blackCastle = backupBlackCastle
+            self.blackLeftRook = backupBlackLeftRook
+            self.blackRightRook = backupBlackRightRook
+            if (start, end) in self.castlingMoves and (start, end) in keptMoves and self.inCheck(side):
+                keptMoves.remove((start, end))
         return keptMoves
 
     def inCheck(self, colour):

@@ -142,10 +142,10 @@ def saveState(game):
     board = []
     for row in game.board:
         board.append(row[:])
-    return (board, game.whiteToMove, list(game.enPassantMoves), game.enPassant, game.whiteCastle, game.whiteLeftRook, game.whiteRightRook, game.blackCastle, game.blackLeftRook, game.blackRightRook, game.firstMove, game.check)
+    return (board, game.whiteToMove, list(game.enPassantMoves), game.enPassant, game.whiteCastle, game.whiteLeftRook, game.whiteRightRook, game.blackCastle, game.blackLeftRook, game.blackRightRook, game.firstMove, game.check, list(game.legalMoves))
      
 def restoreState(game, state):
-    (board, whiteToMove, enPassantMoves, enPassant, whiteCastle, whiteLeftRook, whiteRightRook, blackCastle, blackLeftRook, blackRightRook, firstMove, check) = state
+    (board, whiteToMove, enPassantMoves, enPassant, whiteCastle, whiteLeftRook, whiteRightRook, blackCastle, blackLeftRook, blackRightRook, firstMove, check, legalMoves) = state
     boardCopy = []
     for row in board:
         boardCopy.append(row[:])
@@ -161,6 +161,7 @@ def restoreState(game, state):
     game.blackRightRook = blackRightRook
     game.firstMove = firstMove
     game.check = check
+    game.legalMoves = list(legalMoves)
 
 
 # Minimax and alpha-beta

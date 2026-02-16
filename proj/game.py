@@ -187,10 +187,15 @@ def options():
                 py.quit()
             if event.type == py.MOUSEBUTTONDOWN:
                 if colourButton.hover(py.mouse.get_pos()):
-                    colour1 = simpledialog.askstring("Entry Window", "Enter light-square hex code").strip().upper() # Entry window for hex codes, whitespace removed and capitalised
-                    colour2 = simpledialog.askstring("Entry Window", "Enter dark-square hex code").strip().upper()
-                    result1 = hexValidation(colour1)
-                    result2 = hexValidation(colour2)
+                    colour1 = simpledialog.askstring("Entry Window", "Enter light-square hex code") # Entry window for hex codes
+                    colour2 = simpledialog.askstring("Entry Window", "Enter dark-square hex code")
+                    if colour1 is None or colour2 is None:
+                        break
+                    else:
+                        colour1 = colour1.strip().upper()
+                        colour2 = colour2.strip().upper()
+                        result1 = hexValidation(colour1)
+                        result2 = hexValidation(colour2)
                     if not result1 or not result2:
                         screen.blit(errorText, errorRect)
                     else:
@@ -284,7 +289,6 @@ def multiplayer(timeSetting):
     game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
     selected = None
     game.generateLegalMoves()
-    gl.Board.generateLegalMoves(game)
 
     titleText = BUTTON_TEXT.render("Multiplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -296,7 +300,7 @@ def multiplayer(timeSetting):
     blackText = SMALL_TEXT.render("Black", True, "#FFFFFF")
     blackRect = blackText.get_rect(center = (1260, 235))
     screen.blit(blackText, blackRect)
-    if whiteMinutes > 10:
+    if whiteMinutes >= 10:
         zero = ""
     else:
         zero = "0"
@@ -466,7 +470,6 @@ def singleplayer(timeSetting, playerSetting, difficulty):
     game = gl.Board((960-400, 500-300), BOARD_WIDTH, BOARD_HEIGHT, py.Color("#88A4B0"), py.Color("#E2E2E2"))
     selected = None
     game.generateLegalMoves()
-    gl.Board.generateLegalMoves(game)
 
     if playerSetting == "Random":
         playerSetting = random.choice(["White", "Black"])
@@ -477,6 +480,14 @@ def singleplayer(timeSetting, playerSetting, difficulty):
         depth = 2
     elif difficulty == "H":
         depth = 3
+    if timeSetting == "1 min":
+        delay = 0.2
+    elif timeSetting == "2 mins":
+        delay = 0.25
+    elif timeSetting == "5 mins" or timeSetting == "10 mins" or timeSetting == "15 mins":
+        delay = 0.5
+    else:
+        delay = 1
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -488,22 +499,29 @@ def singleplayer(timeSetting, playerSetting, difficulty):
     blackText = SMALL_TEXT.render("Black", True, "#FFFFFF")
     blackRect = blackText.get_rect(center = (1260, 235))
     screen.blit(blackText, blackRect)
-    if whiteMinutes > 10:
+    if whiteMinutes >= 10:
         zero = ""
     else:
         zero = "0"
-    whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + "00", True, "#FFFFFF")
-    whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
+    if humanWhite:
+        whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + "00", True, "#FFFFFF")
+        whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
+    else:
+        whiteTimerText = TIMER_TEXT.render("XX:XX", True, "#FFFFFF")
+        whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
     screen.blit(whiteTimerText, whiteTimerRect)
-    blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + "00", True, "#FFFFFF")
-    blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
+    if not humanWhite:
+        blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + "00", True, "#FFFFFF")
+        blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
+    else:
+        blackTimerText = TIMER_TEXT.render("XX:XX", True, "#FFFFFF")
+        blackTimerRect = whiteTimerText.get_rect(center = (1255, 285))
     screen.blit(blackTimerText, blackTimerRect)
 
     resignButton = Buttons((650, 850), "assets/buttons/optionsButton.png", "Resign", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
     drawButton = Buttons((835, 850), "assets/buttons/optionsButton.png", "Draw", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
-    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
-    allButtons = [resignButton, drawButton, backButton]
+    allButtons = [resignButton, drawButton]
 
     playing = True
     firstLoop = True
@@ -539,11 +557,12 @@ def singleplayer(timeSetting, playerSetting, difficulty):
                         sZero = ""
                     else:
                         sZero = "0"
-                    whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + sZero + str(whiteSeconds), True, "#FFFFFF")
-                    bgRect = whiteTimerRect.inflate(10, 5)
-                    py.draw.rect(screen, "#000000", bgRect)
-                    whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
-                    screen.blit(whiteTimerText, whiteTimerRect)
+                    if humanWhite:
+                        whiteTimerText = TIMER_TEXT.render(zero + str(whiteMinutes) + ":" + sZero + str(whiteSeconds), True, "#FFFFFF")
+                        bgRect = whiteTimerRect.inflate(10, 5)
+                        py.draw.rect(screen, "#000000", bgRect)
+                        whiteTimerRect = whiteTimerText.get_rect(center = (1260, 710))
+                        screen.blit(whiteTimerText, whiteTimerRect)
                 if not game.whiteToMove:
                     if blackSeconds == 0:
                         if blackMinutes == 0:
@@ -561,15 +580,21 @@ def singleplayer(timeSetting, playerSetting, difficulty):
                         sZero = ""
                     else:
                         sZero = "0"
-                    blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + sZero + str(blackSeconds), True, "#FFFFFF")
-                    blackTimerRect = blackTimerText.get_rect(center = (1260, 285))
-                    bgRect = blackTimerRect.inflate(10, 5)
-                    py.draw.rect(screen, "#000000", bgRect)
-                    screen.blit(blackTimerText, blackTimerRect)
-        gl.Board.drawBoard(game, screen, pieceCodes, pieceImages)
-        gl.Board.drawLegalMoves(game, screen, selected)
+                    if not humanWhite:
+                        blackTimerText = TIMER_TEXT.render(zero + str(blackMinutes) + ":" + sZero + str(blackSeconds), True, "#FFFFFF")
+                        blackTimerRect = blackTimerText.get_rect(center = (1260, 285))
+                        bgRect = blackTimerRect.inflate(10, 5)
+                        py.draw.rect(screen, "#000000", bgRect)
+                        screen.blit(blackTimerText, blackTimerRect)
+        if not humanWhite:
+            flip = True
+        else:
+            flip = False
+        gl.Board.drawBoard(game, screen, pieceCodes, pieceImages, flip = flip)
+        gl.Board.drawLegalMoves(game, screen, selected, flip = flip)
         py.display.flip()
         if (game.whiteToMove and not humanWhite) or (not game.whiteToMove and humanWhite): # If it's the engine's turn...
+            py.event.pump()
             move = en.chooseMove(game, depth)
             if move is None:
                 game.generateLegalMoves()  # (safe even though chooseMove already did)
@@ -584,21 +609,38 @@ def singleplayer(timeSetting, playerSetting, difficulty):
                             winner("White")
                         else:
                             winner("Stalemate")
-            if game.move(move[0], move[1]):
-                print(game.moveHistory[-1]) # Debugging
-                index = len(game.moveHistory) - 1
-                turn = index // 2 + 1
-                movePairs.append(game.moveHistory[-1])
-                if len(movePairs) == 2:
-                    move = str(turn) + ". " + str(movePairs[0]) + " " + str(movePairs[1])
-                    movePairs = []
-                    moveText = SMALLER_TEXT.render(move, True, "#FFFFFF")
-                    moveRect = moveText.get_rect(topleft=(1195, 325 + (15 * ((len(game.moveHistory) - 2) % 22))))
-                    if (len(game.moveHistory) - 2) % 22 == 0 and len(game.moveHistory) > 2:
-                        wipeRect = py.Rect(1195, moveRect.top, 150, (650 - moveRect.top))
-                        py.draw.rect(screen, (0, 0, 0), wipeRect)
-                    screen.blit(moveText, moveRect)
-                game.generateLegalMoves()
+                    playing = False
+                    py.display.init()
+            else:
+                if game.move(move[0], move[1]):
+                    time.sleep(delay)
+                    print(game.moveHistory[-1]) # Debugging
+                    index = len(game.moveHistory) - 1
+                    turn = index // 2 + 1
+                    movePairs.append(game.moveHistory[-1])
+                    if len(movePairs) == 2:
+                        move = str(turn) + ". " + str(movePairs[0]) + " " + str(movePairs[1])
+                        movePairs = []
+                        moveText = SMALLER_TEXT.render(move, True, "#FFFFFF")
+                        moveRect = moveText.get_rect(topleft = (1195, 325 + (15 * ((len(game.moveHistory) - 2) % 22))))
+                        if (len(game.moveHistory) - 2) % 22 == 0 and len(game.moveHistory) > 2:
+                            wipeRect = py.Rect(1195, moveRect.top, 150, (650 - moveRect.top))
+                            py.draw.rect(screen, (0, 0, 0), wipeRect)
+                        screen.blit(moveText, moveRect)
+                    game.generateLegalMoves()
+                    if len(game.legalMoves) == 0:
+                        if game.whiteToMove:
+                            if game.inCheck("w"):
+                                winner("Black")
+                            else:
+                                winner("Stalemate")
+                        else:
+                            if game.inCheck("b"):
+                                winner("White")
+                            else:
+                                winner("Stalemate")
+                        playing = False
+                        py.display.init()
         for button in allButtons:
             button.hover(py.mouse.get_pos())
             button.draw(screen)
@@ -609,10 +651,6 @@ def singleplayer(timeSetting, playerSetting, difficulty):
             if event.type == py.MOUSEBUTTONDOWN:
                 mousePos = py.mouse.get_pos()
                 boardPos = game.hoverSquare(mousePos)
-                if backButton.hover(py.mouse.get_pos()):
-                    mainMenu()
-                    playing = False
-                    py.display.init()
                 if resignButton.hover(py.mouse.get_pos()):
                     if humanWhite:
                         winner("Black")
@@ -629,6 +667,9 @@ def singleplayer(timeSetting, playerSetting, difficulty):
                 if boardPos == None: # Handles off-board clicks
                     selected = None
                     continue
+                if boardPos != None and flip:
+                    r, c = boardPos
+                    boardPos = (7 - r, 7 -c)
                 r, c = boardPos
                 piece = game.board[r][c]
                 if selected == None:
@@ -676,7 +717,8 @@ def singleplayer(timeSetting, playerSetting, difficulty):
 
 def winner(result):
     # The end-game loop, which runs when a game ends for any reason
-    bg = py.image.load("assets/bg.png")
+    bg = py.Surface(screen.get_size(), py.SRCALPHA)
+    bg.fill((0, 0, 0, 235))
     screen.blit(bg, (0, 0))
     if result == "White" or result == "Black":
         titleText = HEADER.render(result + " wins!", True, "#FFFFFF")
