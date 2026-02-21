@@ -1,5 +1,6 @@
 import pygame as py
 import engine as en
+import math
 
 class Board():
     def __init__(self, position, length, height, darkCol, lightCol):
@@ -33,6 +34,10 @@ class Board():
         self.check = False
         self.castlingMoves = []
         self.previousMove = None
+        self.pieceImage = None
+        self.elapsed = 0
+        self.animating = False
+        self.currentPiece = ""
 
     def drawBoard(self, screen, codes, images, flip = False):
         if self.previousMove is not None:
@@ -59,6 +64,10 @@ class Board():
                     elif rF == dx and cF == dy:
                         py.draw.rect(screen, "#ffd0b5", square)
                 piece = self.board[rF][cF]
+                if self.animating and self.previousMove is not None:
+                    er, ec = self.previousMove[1]
+                    if (rF, cF) == (er, ec):
+                        piece = ""
                 try:
                     pieceImage = images[codes.index(piece)]
                     screen.blit(pieceImage, (x, y)) # Draws piece images
@@ -67,6 +76,34 @@ class Board():
                 x += self.squareSize # Increments x to move to the next square
             x = 0 + self.position[0]
             y += self.squareSize # Increments y to move to the next row
+
+    def smoothPieceMove(self, screen, codes, images, moveTime, flip = False):
+        if self.previousMove is None or not self.animating:
+            return
+        (r1, c1), (r2, c2) = self.previousMove
+        if flip:
+            c1 = 7 - c1
+            c2 = 7 - c2
+            r1 = 7 - r1
+            r2 = 7 - r2
+        oX = self.position[0] + c1 * self.squareSize
+        oY = self.position[1] + r1 * self.squareSize
+        dX = self.position[0] + c2 * self.squareSize
+        dY = self.position[1] + r2 * self.squareSize
+        dt = 1/60
+        self.elapsed += dt
+        t = self.elapsed / moveTime
+        if t >= 1.0:
+            pieceImage = images[codes.index(self.pieceImage)]
+            screen.blit(pieceImage, (dX, dY))
+            self.animating = False
+            self.elapsed = 0.0
+            return
+        p = 0.5 - 0.5 * math.cos(math.pi * t)
+        x = oX + (dX - oX) * p
+        y = oY + (dY - oY) * p
+        pieceImage = images[codes.index(self.pieceImage)]
+        screen.blit(pieceImage, (x, y))
 
     def generateLegalMoves(self, filterCheck = True):
         self.legalMoves = []
@@ -131,6 +168,10 @@ class Board():
             pos2 = (r2, c2)
         self.moveHistory.append(self.indextoACN(pos1, pos2, piece1))
         self.previousMove = (pos1, pos2)
+        self.currentPiece = piece1
+        self.pieceImage = piece1
+        self.elapsed = 0.0
+        self.animating = True
         self.board[r2 + self.enPassant][c2] = piece1
         self.board[r1][c1] = ""
         if self.enPassant != 0:
@@ -342,48 +383,50 @@ class Board():
     
     # Helper functions
 
-    def legalTargets(self, start): # Gets the legal moves for a piece
-        if start == None: # If nothing selected, there are no targets to highlight
+    def legalTargets(self, start):
+        if start == None:
             return []
         else:
             targets = []
-            for move in self.legalMoves: # Iterates through every move in self.legalMoves and appends just the end squares where start matches that square
+            for move in self.legalMoves:
                 if move[0] == start:
                     targets.append(move[1])
             return targets
         
-    def drawLegalMoves(self, screen, start, colour = (130, 130, 130), transparency = 170, defaultRadius = 0.16, captureRadius = 0.22, flip = False): # Colour is the colour of the circle, transparency is self-explanatory (0-255)
-        if start == None: # If nothing is selected, don't draw anything
+    def drawLegalMoves(self, screen, start, flip = False):
+        if start == None:
             return
-        sr, sc = start # Unpacks the selected row and selected column
-        mover = self.board[sr][sc] # Obtains selected square
-        moverColour = mover[0]  # "w" or "b", uses indexing
+        sr, sc = start
+        mover = self.board[sr][sc]
+        moverColour = mover[0]
         targets = self.legalTargets(start)
-        if not targets: # If there are no legal moves, there is nothing to draw
+        if not targets: 
             return
-        overlay = py.Surface((self.length, self.height), py.SRCALPHA) # Creates surface the size of the board
-        defaultR = int(self.squareSize * defaultRadius) # Computes radii based on square size
-        capR = int(self.squareSize * captureRadius)
+        overlay = py.Surface((self.length, self.height), py.SRCALPHA) 
+        defaultR = int(self.squareSize * 0.16)
+        capR = int(self.squareSize * 0.22)
         ringDiameter  = int(self.squareSize * 0.04)
-        for (r, c) in targets: # Loop over every legal square
+        for (r, c) in targets:
             if flip:
-                rd, cd = (7 - r, 7 - c)
+                rF = 7 - r
+                cF = 7 - c
             else:
-                rd, cd = (r, c)
-            cx = int(cd * self.squareSize + self.squareSize / 2) # Convert board coordinates into pixel coordinates of the center of the square
-            cy = int(rd * self.squareSize + self.squareSize / 2)
-            targetPiece = self.board[r][c] # Obtain what is on the target square
+                rF = r
+                cF = c
+            cx = int(cF * self.squareSize + self.squareSize / 2) 
+            cy = int(rF * self.squareSize + self.squareSize / 2)
+            targetPiece = self.board[r][c]
             enPassant = 0
-            if mover[1] == "P" and targetPiece == "" and abs(r - sr) == 1 and abs(c - sc) == 1:
+            if mover[1] == "P" and targetPiece == "" and abs(r - sr) == 1 and abs(c - sc) == 1: # En passant handling
                 if moverColour == "w":
                     enPassant = -1 
                 else: 
                     enPassant = 1
             if (targetPiece != "" and targetPiece[0] != moverColour) or enPassant != 0:
-                py.draw.circle(overlay, (*colour, transparency), (cx, cy), capR, width=ringDiameter)
+                py.draw.circle(overlay, (*(130, 130, 130), 170), (cx, cy), capR, width = ringDiameter)
             else:
-                py.draw.circle(overlay, (*colour, transparency), (cx, cy), defaultR)
-        screen.blit(overlay, self.position) # Offsets using self.position
+                py.draw.circle(overlay, (*(130, 130, 130), 170), (cx, cy), defaultR)
+        screen.blit(overlay, self.position)
     
     def kingPos(self, colour = None):
         if colour == None:

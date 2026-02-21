@@ -55,7 +55,7 @@ def hexValidation(data):
         return False
     for i in range(1, len(data)):
         character = data[i]
-        if not (character.isdigit() or character in ["A", "B", "C", "D", "E", "F"]): # All hex codes are either digits or letters A-F
+        if not (character.isdigit() or character in ["A", "B", "C", "D", "E", "F", "a", "b", "c", "d", "e", "f"]): # All hex codes are either digits or letters A-F
             return False
     return True
 
@@ -259,7 +259,7 @@ def difficultySelect(timeSetting):
                     playerCounter = playerCounter % len(playerSelectList)
                     playerSelectButton.draw(screen)
                 if backButton.hover(py.mouse.get_pos()):
-                    mainMenu()
+                    initialiseGame()
                     playing = False
                     py.display.init()
         clock.tick(60)
@@ -290,6 +290,15 @@ def multiplayer(timeSetting):
     selected = None
     game.generateLegalMoves()
 
+    if timeSetting == "1 min":
+        moveTime = 0.001
+    elif timeSetting == "2 mins":
+        moveTime = 0.075
+    elif timeSetting == "5 mins" or timeSetting == "10 mins" or timeSetting == "15 mins":
+        moveTime = 0.15
+    else:
+        moveTime = 0.3
+
     titleText = BUTTON_TEXT.render("Multiplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
     screen.blit(titleText, titleRect)
@@ -311,7 +320,7 @@ def multiplayer(timeSetting):
     blackTimerRect = whiteTimerText.get_rect(center = (1260, 285))
     screen.blit(blackTimerText, blackTimerRect)
 
-    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Back", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
+    backButton = Buttons((100, 1030), "assets/buttons/optionsButton.png", "Menu", SMALL_BUTTON_TEXT, "#FFFFFF", "#9C9C9C")
 
     allButtons = [backButton]
 
@@ -378,8 +387,12 @@ def multiplayer(timeSetting):
                     screen.blit(blackTimerText, blackTimerRect)
         flip = not game.whiteToMove
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages, flip = flip)
+        game.smoothPieceMove(screen, pieceCodes, pieceImages, moveTime, flip = flip)
         gl.Board.drawLegalMoves(game, screen, selected, flip = flip)
         py.display.flip()
+        if game.animating:
+            clock.tick(60)
+            continue
         for button in allButtons:
             button.hover(py.mouse.get_pos())
             button.draw(screen)
@@ -474,20 +487,25 @@ def singleplayer(timeSetting, playerSetting, difficulty):
     if playerSetting == "Random":
         playerSetting = random.choice(["White", "Black"])
     humanWhite = (playerSetting == "White")
+    if timeSetting == "1 min":
+        delay = 0.2
+        moveTime = 0.001
+    elif timeSetting == "2 mins":
+        delay = 0.25
+        moveTime = 0.075
+    elif timeSetting == "5 mins" or timeSetting == "10 mins" or timeSetting == "15 mins":
+        delay = 0.3
+        moveTime = 0.15
+    else:
+        delay = 0.75
+        moveTime = 0.3
     if difficulty == "E":
         depth = 1
     elif difficulty == "M":
         depth = 2
     elif difficulty == "H":
         depth = 3
-    if timeSetting == "1 min":
-        delay = 0.2
-    elif timeSetting == "2 mins":
-        delay = 0.25
-    elif timeSetting == "5 mins" or timeSetting == "10 mins" or timeSetting == "15 mins":
-        delay = 0.5
-    else:
-        delay = 1
+        delay = 0
 
     titleText = BUTTON_TEXT.render("Singleplayer", True, "#FFFFFF") 
     titleRect = titleText.get_rect(center = (960, 100))
@@ -591,8 +609,12 @@ def singleplayer(timeSetting, playerSetting, difficulty):
         else:
             flip = False
         gl.Board.drawBoard(game, screen, pieceCodes, pieceImages, flip = flip)
+        game.smoothPieceMove(screen, pieceCodes, pieceImages, moveTime, flip = flip)
         gl.Board.drawLegalMoves(game, screen, selected, flip = flip)
         py.display.flip()
+        if game.animating:
+            clock.tick(60)
+            continue
         if (game.whiteToMove and not humanWhite) or (not game.whiteToMove and humanWhite): # If it's the engine's turn...
             py.event.pump()
             move = en.chooseMove(game, depth)
@@ -717,8 +739,8 @@ def singleplayer(timeSetting, playerSetting, difficulty):
 
 def winner(result):
     # The end-game loop, which runs when a game ends for any reason
-    bg = py.Surface(screen.get_size(), py.SRCALPHA)
-    bg.fill((0, 0, 0, 235))
+    bg = py.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), py.SRCALPHA)
+    bg.fill((0, 0, 0, 230))
     screen.blit(bg, (0, 0))
     if result == "White" or result == "Black":
         titleText = HEADER.render(result + " wins!", True, "#FFFFFF")
