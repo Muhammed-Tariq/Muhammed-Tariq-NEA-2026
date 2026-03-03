@@ -70,12 +70,10 @@ kingMobilityW = [[-30, -40, -40, -50, -50, -40, -40, -30],
 kingMobilityB = kingMobilityW[::-1]
 
 
-
-
 # Evaluation calculators
 
 
-def calculateMaterial(board):
+def calculateMaterial(board): # Iterates through board and sums the material values of all pieces; Black pieces are negative values, White pieces are positive values
     eval = 0
     for r in range(8):
         for c in range(8):
@@ -97,7 +95,7 @@ def calculateMaterial(board):
                 
 def calculateMobility(board):
     eval = 0
-    for r in range(8):
+    for r in range(8): # Iterates through board and sums the positional values of all pieces based on the piece-square table
         for c in range(8):
             if board[r][c] == "":
                  continue
@@ -131,8 +129,8 @@ def calculateMobility(board):
                 eval -= score
     return eval
 
-def calculateEvaluation(board):
-    return calculateMobility(board) + calculateMaterial(board)
+def calculateEvaluation(board): # Total evaluation
+    return calculateMobility(board) + calculateMaterial(board) 
 
 
 # Save/restore game
@@ -218,17 +216,17 @@ def chooseMove(game, depth):
     bestMove = None
     if game.whiteToMove:
         bestValue = -math.inf
-        for move in moves:
+        for move in moves: # Iterates through each legal move, and only obtains the move that leads to the best evaluation
             state = saveState(game)
             start, end = move
             game.noChangeMove(start, end)
             game.whiteToMove = not game.whiteToMove
-            value = alphaBeta(game, depth - 1, -math.inf, math.inf)
+            value = alphaBeta(game, depth - 1, -math.inf, math.inf) # Obtains value of the best position that can be obtained from that move
             restoreState(game, state)
-            if value > bestValue:
+            if value > bestValue: # Only considers the move that maximises the value for Whitte
                 bestValue = value
                 bestMove = move
-    else:
+    else: # Minimises for Black; symmetric logic
         bestValue = math.inf
         for move in moves:
             state = saveState(game)
