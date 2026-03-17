@@ -506,7 +506,7 @@ class Board():
                 side = "b"
             if not kingAttacked:
                 keptMoves.append((start, end))
-            self.board = backupBoard
+            self.board = backupBoard # Returning the game back to normal
             self.enPassantMoves = backupEPMoves
             self.enPassant = backupEP
             self.legalMoves = backupLegalMoves
